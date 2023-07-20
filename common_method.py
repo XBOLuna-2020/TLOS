@@ -18,7 +18,7 @@ driver = webdriver.Chrome(options=options) #实例化
 driver.maximize_window() #窗口最大化
 
 # 打开url 并且在用户名和密码放在里面
-driver.get('http://mgrtest:tower1@uft-svr-080801/Tower080801/')
+driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
 time.sleep(1)
 
 # 单击图标，回到首页
@@ -50,7 +50,9 @@ def generate_new_ssn():
 
 # 在搜索框中输入ssn,查看是否已存在
 def search_new_ssn():
-    ssn_input = driver.find_element(By.ID,"SSN")
+    wait = WebDriverWait(driver,10)#等待ssn visible
+    ssn_input = wait.until(EC.element_to_be_clickable((By.ID,'SSN')))
+    # ssn_input = driver.find_element(By.ID,"SSN")
     ssn_input.clear()
     ssn_input.send_keys(new_ssn) #输入 SSN
 
@@ -86,37 +88,47 @@ def click_create_btn():
     Button_Agree.click()
     create_new_application()
 
+
 def create_new_application():
-    driver.find_element(By.ID,'Applicant_SSN').send_keys(new_ssn)
-    '''Generate fake name'''
+    driver.find_element(By.ID,'Applicant_SSN').send_keys(new_ssn) # enter ssn
+
+    # input name
     fake = Faker()
     full_name = fake.name() #注意后面要加（）调用方法并返回姓名字符串数据,此处返回的是first + last name，否则就是返回方法本身
-    first_name, last_name = full_name.split()  # 拆分姓名为名字和姓氏
-    driver.find_element(By.ID, "Applicant_FirstName").send_keys(first_name)  # 填入名字
-    driver.find_element(By.ID, "Applicant_LastName").send_keys(last_name)  # 填入形式
+    first_name, last_name = full_name.split() #拆分姓名为名字和姓氏
+    driver.find_element(By.ID,"Applicant_FirstName").send_keys(first_name) #填入名字
+    driver.find_element(By.ID, "Applicant_LastName").send_keys(last_name) # 填入形式
 
     #定位并输入多个字段的数据
     input_fields = {
-    # '''basic_info'''
+        #Basic loan information
         "AmountRequested": '1000',
         "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
         "LoanPurposeId": 'CHRISTMAS (1)',
+        # Residence info
+        "ResidenceStatusId":'Rent',
+        "DateOfResidence": '1/1/2010',
+        "Applicant_CurrentAddress_Address1": '2220 RIDGEVIEW ST',
+        "Applicant_CurrentAddress_Zip": '76119-3117',
+        #Emp info
+        "Applicant_EmploymentHistory_0__Employer":'Marsk',
+        "Applicant_EmploymentHistory_0__Industry":'EDUCATION',
+        # "Applicant_EmploymentHistory_0__Position":'TEACHER',
+        "Applicant_EmploymentHistory_0__DateEmployed":'8/8/2008',
+        "Applicant_EmploymentHistory_0__NetSalary":'10000',
+        #Bank info
+        "Applicant_BankName":'Bank of US',
+        "Applicant_CheckingAccount":'Y',
+        "Applicant_SavingAccount":'Y',
+        
+        "DeclaredBankruptcy":'N'
 
-    # '''applicant_basic_info'''
-        "Applicant_Birthdate": '1/1/1990',
 
-    # '''Applicant_CurrentAddress'''
-        "DateOfResidence":'1/1/2010',
-        "Applicant_CurrentAddress_Address1":'2220 RIDGEVIEW ST',
-        "Applicant_CurrentAddress_Zip":'76119-3117',
-        # "Applicant_CurrentAddress_City":'FORT WORTH',
-        # "stateId":'',
-        # "countyName":'ANDERSON (1)'
-
-        #
     }
-    for filed,value in input_fields.items():
-        driver.find_element(By.ID,filed).send_keys(value)
+    for field,value in input_fields.items():
+        driver.find_element(By.ID,field).send_keys(value)
+        print('输入了：'+field)
+
 
 
 
