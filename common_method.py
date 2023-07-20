@@ -53,13 +53,13 @@ def search_new_ssn():
     wait = WebDriverWait(driver,10)#等待ssn visible
     ssn_input = wait.until(EC.element_to_be_clickable((By.ID,'SSN')))
     # ssn_input = driver.find_element(By.ID,"SSN")
-    ssn_input.clear()
+    ssn_input.click()
+    # ssn_input.clear()
     ssn_input.send_keys(new_ssn) #输入 SSN
 
     # 点击搜索按钮
     search_button = driver.find_element(By.XPATH,'//*[@id="body"]/section/form/fieldset/p/button[1]')
     search_button.click()
-    # time.sleep(5)
 
     #等待表格的出现
     # wait = WebDriverWait(driver,10)
@@ -88,13 +88,19 @@ def click_create_btn():
     Button_Agree.click()
     create_new_application()
 
-
+# 进入新建application interivew的页面，开始输入数据
 def create_new_application():
-    driver.find_element(By.ID,'Applicant_SSN').send_keys(new_ssn) # enter ssn
+    driver.find_element(By.ID, 'Applicant_SSN').click()  # 单击一下ssn 的输入框，否则老是无效输入
+    driver.find_element(By.ID, 'Applicant_SSN').clear()
+    driver.find_element(By.ID,'Applicant_SSN').send_keys(new_ssn)  # enter ssn
+    driver.find_element(By.ID, 'AmountRequested').click()  # 单击一下ssn 的输入框，否则老是无效输入
+    driver.find_element(By.ID, 'AmountRequested').clear()
+    driver.find_element(By.ID, 'AmountRequested').send_keys('1000')
 
     # input name
     fake = Faker()
     full_name = fake.name() #注意后面要加（）调用方法并返回姓名字符串数据,此处返回的是first + last name，否则就是返回方法本身
+    print(full_name)
     first_name, last_name = full_name.split() #拆分姓名为名字和姓氏
     driver.find_element(By.ID,"Applicant_FirstName").send_keys(first_name) #填入名字
     driver.find_element(By.ID, "Applicant_LastName").send_keys(last_name) # 填入形式
@@ -105,6 +111,9 @@ def create_new_application():
         "AmountRequested": '1000',
         "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
         "LoanPurposeId": 'CHRISTMAS (1)',
+        "Applicant_Birthdate":'8/8/2008',
+
+
         # Residence info
         "ResidenceStatusId":'Rent',
         "DateOfResidence": '1/1/2010',
