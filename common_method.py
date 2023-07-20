@@ -86,17 +86,11 @@ def click_create_btn():
     # 在弹出的窗口上单击 Agree button
     Button_Agree = driver.find_element(By.XPATH,'/html/body/div[1]/section/form/div/div/div/div[3]/button')
     Button_Agree.click()
-    create_new_application()
+    create_new_application() #新页面开始输入数据
 
 # 进入新建application interivew的页面，开始输入数据
 def create_new_application():
-    driver.find_element(By.ID, 'Applicant_SSN').click()  # 单击一下ssn 的输入框，否则老是无效输入
-    driver.find_element(By.ID, 'Applicant_SSN').clear()
-    driver.find_element(By.ID,'Applicant_SSN').send_keys(new_ssn)  # enter ssn
-    driver.find_element(By.ID, 'AmountRequested').click()  # 单击一下ssn 的输入框，否则老是无效输入
-    driver.find_element(By.ID, 'AmountRequested').clear()
-    driver.find_element(By.ID, 'AmountRequested').send_keys('1000')
-
+    driver.find_element(By.ID,'AmountRequested').send_keys('1000')
     # input name
     fake = Faker()
     full_name = fake.name() #注意后面要加（）调用方法并返回姓名字符串数据,此处返回的是first + last name，否则就是返回方法本身
@@ -105,38 +99,86 @@ def create_new_application():
     driver.find_element(By.ID,"Applicant_FirstName").send_keys(first_name) #填入名字
     driver.find_element(By.ID, "Applicant_LastName").send_keys(last_name) # 填入形式
 
-    #定位并输入多个字段的数据
+    # 定位并输入多个字段的数据
     input_fields = {
-        #Basic loan information
-        "AmountRequested": '1000',
+        # Basic loan information
+        # "AmountRequested": '1000',
         "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
         "LoanPurposeId": 'CHRISTMAS (1)',
-        "Applicant_Birthdate":'8/8/2008',
-
+        "Applicant_Birthdate": '8/8/2008',
 
         # Residence info
-        "ResidenceStatusId":'Rent',
+        "ResidenceStatusId": 'Rent',
         "DateOfResidence": '1/1/2010',
         "Applicant_CurrentAddress_Address1": '2220 RIDGEVIEW ST',
         "Applicant_CurrentAddress_Zip": '76119-3117',
-        #Emp info
-        "Applicant_EmploymentHistory_0__Employer":'Marsk',
-        "Applicant_EmploymentHistory_0__Industry":'EDUCATION',
+        # Emp info
+        "Applicant_EmploymentHistory_0__Employer": 'Marsk',
+        "Applicant_EmploymentHistory_0__Industry": 'EDUCATION',
         # "Applicant_EmploymentHistory_0__Position":'TEACHER',
-        "Applicant_EmploymentHistory_0__DateEmployed":'8/8/2008',
-        "Applicant_EmploymentHistory_0__NetSalary":'10000',
-        #Bank info
-        "Applicant_BankName":'Bank of US',
-        "Applicant_CheckingAccount":'Y',
-        "Applicant_SavingAccount":'Y',
-        
-        "DeclaredBankruptcy":'N'
+        "Applicant_EmploymentHistory_0__DateEmployed": '8/8/2008',
+        "Applicant_EmploymentHistory_0__NetSalary": '10000',
+        # Bank info
+        "Applicant_BankName": 'Bank of US',
+        "Applicant_CheckingAccount": 'Y',
+        "Applicant_SavingAccount": 'Y',
 
+        "DeclaredBankruptcy": 'N'
 
     }
-    for field,value in input_fields.items():
-        driver.find_element(By.ID,field).send_keys(value)
-        print('输入了：'+field)
+    for field, value in input_fields.items():
+        driver.find_element(By.ID, field).send_keys(value)
+        print('输入了：' + field)
+
+# 进入新建application interivew的页面，开始输入数据
+# def create_new_application():
+#     driver.find_element(By.ID, 'Applicant_SSN').click()  # 单击一下ssn 的输入框，否则老是无效输入
+#     driver.find_element(By.ID, 'Applicant_SSN').clear()
+#     driver.find_element(By.ID,'Applicant_SSN').send_keys(new_ssn)  # enter ssn
+#     driver.find_element(By.ID, 'AmountRequested').click()  # 单击一下ssn 的输入框，否则老是无效输入
+#     driver.find_element(By.ID, 'AmountRequested').clear()
+#     driver.find_element(By.ID, 'AmountRequested').send_keys('1000')
+#
+#     # input name
+#     fake = Faker()
+#     full_name = fake.name() #注意后面要加（）调用方法并返回姓名字符串数据,此处返回的是first + last name，否则就是返回方法本身
+#     print(full_name)
+#     first_name, last_name = full_name.split() #拆分姓名为名字和姓氏
+#     driver.find_element(By.ID,"Applicant_FirstName").send_keys(first_name) #填入名字
+#     driver.find_element(By.ID, "Applicant_LastName").send_keys(last_name) # 填入形式
+#
+#     #定位并输入多个字段的数据
+#     input_fields = {
+#         #Basic loan information
+#         "AmountRequested": '1000',
+#         "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
+#         "LoanPurposeId": 'CHRISTMAS (1)',
+#         "Applicant_Birthdate":'8/8/2008',
+#
+#
+#         # Residence info
+#         "ResidenceStatusId":'Rent',
+#         "DateOfResidence": '1/1/2010',
+#         "Applicant_CurrentAddress_Address1": '2220 RIDGEVIEW ST',
+#         "Applicant_CurrentAddress_Zip": '76119-3117',
+#         #Emp info
+#         "Applicant_EmploymentHistory_0__Employer":'Marsk',
+#         "Applicant_EmploymentHistory_0__Industry":'EDUCATION',
+#         # "Applicant_EmploymentHistory_0__Position":'TEACHER',
+#         "Applicant_EmploymentHistory_0__DateEmployed":'8/8/2008',
+#         "Applicant_EmploymentHistory_0__NetSalary":'10000',
+#         #Bank info
+#         "Applicant_BankName":'Bank of US',
+#         "Applicant_CheckingAccount":'Y',
+#         "Applicant_SavingAccount":'Y',
+#
+#         "DeclaredBankruptcy":'N'
+#
+#
+#     }
+#     for field,value in input_fields.items():
+#         driver.find_element(By.ID,field).send_keys(value)
+#         print('输入了：'+field)
 
 
 
