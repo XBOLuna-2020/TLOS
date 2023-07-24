@@ -1,3 +1,5 @@
+import random
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
@@ -94,35 +96,20 @@ def create_new_application():
     applicant_ssn = driver.find_element(By.ID, 'Applicant_SSN')
     applicant_ssn.click()  # 单击一下applicant ssn 的输入框，否则老是无效输入
     applicant_ssn.send_keys(new_ssn)
-
-    # input name
-    fake = Faker()
-    full_name = fake.name()  # 注意后面要加（）调用方法并返回姓名字符串数据,此处返回的是first + last name，否则就是返回方法本身
-    print(full_name)
-    first_name_box = driver.find_element(By.ID, "Applicant_FirstName")
-    last_name_box = driver.find_element(By.ID, "Applicant_LastName")
-    # 检查姓名是否包含头衔（例如 "PhD"、"Jr."等）
-    if any(title in full_name for title in ["PhD", "Jr.", "Sr.", "II", "III", "IV", "V"]):
-        # 使用空格分割姓名，并将最后一个部分作为姓氏
-        name_parts = full_name.split()
-        first_name = "".join(name_parts[:-1])  # 姓氏为除去最后一个部分的所有部分
-        last_name = name_parts[-1]  # 最后一个部分为姓氏
-        first_name_box.send_keys(first_name) #填入名字
-        last_name_box.send_keys(last_name) # 填入姓氏
-    else:
-        # 如果没有头衔，正常分割姓名
-        first_name, last_name = full_name.split(' ', 1)
-        first_name_box.send_keys(first_name) #填入名字
-        last_name_box.send_keys(last_name) # 填入姓氏
-
+    #自定义name列表，随机输入名字
+    first_name_group = ['Alice', 'Bob', 'Charlie', 'David', 'Emily']
+    last_name_group = ['Green','Baker','Noah']
+    first_name = random.choice(first_name_group)
+    last_name = random.choice(last_name_group)
     # 定位并输入多个字段的数据
     input_fields = {
         # Basic loan information
-        # "AmountRequested": '1000', #不知道为啥使用循环无法有效输入
+        # "AmountRequested": 1000, #不知道为啥使用循环无法有效输入
         "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
         "LoanPurposeId": 'CHRISTMAS (1)',
         "Applicant_Birthdate": '8/8/1998',
-
+        "Applicant_FirstName": first_name,
+        "Applicant_LastName": last_name,
         # Residence info
         "ResidenceStatusId": 'Rent',
         "DateOfResidence": '1/1/2010',
@@ -144,29 +131,25 @@ def create_new_application():
         "FriendPhone_PhoneTypeId":'Cell',
         "Applicant_EmploymentHistory_0__Position": 'TEACHER',
         "Rent_LandlordName":'Tom Green',
-
         "DeclaredBankruptcy": 'N'
-
     }
     for field, value in input_fields.items():
         driver.find_element(By.ID, field).send_keys(value)
-
     # 输入电子邮件
     driver.find_element(By.ID,'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
     # 输入friend phone number
     driver.find_element(By.XPATH,'//*[@id="FriendPhone_PhoneNumber"]').click()
     driver.find_element(By.XPATH,'//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
-
     # 输入County Name
     Select(driver.find_element(By.NAME,'Applicant.CurrentAddress.County')).select_by_visible_text('OUT OF STATE (1000)')
-
     # 选择 mail的radio
     driver.find_element(By.ID,'mail').click()
     # 单击create button
     driver.find_element(By.ID,'btnCreate').click()
+    # 等待App number 出现，就是application创建成功
     app_number = EC.text_to_be_present_in_element((By.ID,'additionalHeaderInfo'),'Application')
     WebDriverWait(driver,10).until(app_number)
-    print('application number is'+ {} )
+
     driver.minimize_window()
 
 
