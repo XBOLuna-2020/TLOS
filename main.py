@@ -14,5 +14,8 @@ common_method.search_new_ssn()
 # 创建新的application，依次输入数据
 common_method.click_create_btn()
 
+# app 创建成功后，进入checkout页面
+common_method.checkout_application()
+
 
 

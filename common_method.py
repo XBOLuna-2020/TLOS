@@ -1,17 +1,13 @@
 import random
-
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import time
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import pandas as pd
 from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
-
+# import pandas as pd
 
 #调浏览器
 options = Options() #实例化
@@ -35,12 +31,12 @@ def access_application_interview():
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()
-    print('Link: Credit Application clicked')
+
 
     # 单击链接1.Application Interview
     link_credit_application = driver.find_element(By.XPATH,'/html/body/div/section/a[1]')
     link_credit_application.click()
-    print('Link: Application Interview clicked.')
+
 
 # 生成新的SSN，并保存成global变量
 def generate_new_ssn():
@@ -48,7 +44,6 @@ def generate_new_ssn():
     fake = Faker()
     new_ssn = fake.ssn()
     print('New SSN:' + new_ssn)
-
 
 # 在搜索框中输入ssn,查看是否已存在
 def search_new_ssn():
@@ -58,23 +53,13 @@ def search_new_ssn():
     ssn_input.click()
     # ssn_input.clear()
     ssn_input.send_keys(new_ssn) #输入 SSN
-
     # 点击搜索按钮
     search_button = driver.find_element(By.XPATH,'//*[@id="body"]/section/form/fieldset/p/button[1]')
     search_button.click()
-
     #等待表格的出现
     # wait = WebDriverWait(driver,10)
     table_prompt = EC.text_to_be_present_in_element((By.ID,'AppplicationTable'),'No data available in table')
     WebDriverWait(driver,10).until(table_prompt)
-    # wait = driver.implicitly_wait(15)
-    # no_data_message = wait.until(EC.visibility_of_element_located((By.ID,"AppplicationTable")))
-    #
-    # # 如果是新SSN，结果应该是空 判断搜索结果是"No data available in table"
-    # if no_data_message.text == "No data available in table":
-    #     print(f"SSN {new_ssn} 可以使用")
-    # else:
-    #     print('继续产生新的SSN 吧')
 
 
 # 在搜索页单击create button
@@ -82,7 +67,6 @@ def click_create_btn():
     # 单击Create button
     button_create = driver.find_element(By.ID,"btnLink")
     button_create.click()
-    print('开始创建application了！')
     time.sleep(2)  #处理下弹窗前，需要等待，让弹窗加载2s
 
     # 在弹出的窗口上单击 Agree button
@@ -147,10 +131,29 @@ def create_new_application():
     # 单击create button
     driver.find_element(By.ID,'btnCreate').click()
     # 等待App number 出现，就是application创建成功
-    app_number = EC.text_to_be_present_in_element((By.ID,'additionalHeaderInfo'),'Application')
-    WebDriverWait(driver,10).until(app_number)
-
+    application = EC.text_to_be_present_in_element((By.ID,'additionalHeaderInfo'),'Application')
+    # application字样出现代表app成功
+    WebDriverWait(driver,10).until(application)
+    # 获取app_number
+    global app_number
+    app_number = driver.find_element(By.XPATH,'//*[@id="additionalHeaderInfo"]/b[1]/a').text
+    print('app number:' + app_number)
     driver.minimize_window()
 
-
+# app 创建成功后，进入checkout页面
+def checkout_application():
+    # 单击下拉列表目录
+    driver.find_element(By.ID,'dropdownMenu1').click()
+    # 选择checkout
+    driver.find_element(By.XPATH,'//*[@id="pageTitle"]/div/ul/li[3]/a').click()
+    # 输入工资信息
+    driver.find_element(By.ID,'ApplicantSalaryGarnishments_VerifiedMonthlySalary').send_keys('8000')
+    driver.find_element(By.ID,'LoanApprovals_0__Approved').send_keys('Y')
+    driver.find_element(By.ID,'LoanApprovals_0__ApprovedAmount').send_keys('1000')
+    driver.find_element(By.ID, 'planA').send_keys('1000') # 输入有问题
+    plan_a = 'Ensure the quality of your application without sacrificing speed or agility with an easy-to-use, GUI test automation tool. Our AI-powered object recognition engine and script or scriptless flexibility is unmatched, letting you test every desktop, web, and mobile application with ease.'
+    driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
+    driver.find_element(By.ID,'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
+    driver.find_element(By.ID,'ApplicantSignature').send_keys('Y')
+    # driver.find_element(By.NAME).click()
 
