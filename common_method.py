@@ -1,13 +1,13 @@
 import random
 from selenium import webdriver
 import time
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
-# import pandas as pd
 
 #调浏览器
 options = Options() #实例化
@@ -16,8 +16,7 @@ driver = webdriver.Chrome(options=options) #实例化
 driver.maximize_window() #窗口最大化
 
 # 打开url 并且在用户名和密码放在里面
-driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
-time.sleep(1)
+# driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
 
 # 单击图标，回到首页
 def back_to_main_menu():
@@ -72,15 +71,16 @@ def click_create_btn():
     # 在弹出的窗口上单击 Agree button
     Button_Agree = driver.find_element(By.XPATH,'/html/body/div[1]/section/form/div/div/div/div[3]/button')
     Button_Agree.click()
-    create_new_application() #新页面开始输入数据
+    create_new_application() # 新页面开始输入数据
 
-# 进入新建application interivew的页面，开始输入数据
+
+# 进入新建application interview的页面，开始输入数据
 def create_new_application():
-    driver.find_element(By.ID,'AmountRequested').send_keys('1000')
+    driver.find_element(By.ID,'AmountRequested').send_keys(1000)
     applicant_ssn = driver.find_element(By.ID, 'Applicant_SSN')
     applicant_ssn.click()  # 单击一下applicant ssn 的输入框，否则老是无效输入
     applicant_ssn.send_keys(new_ssn)
-    #自定义name列表，随机输入名字
+    # 自定义name列表，随机输入名字
     first_name_group = ['Alice', 'Bob', 'Charlie', 'David', 'Emily']
     last_name_group = ['Green','Baker','Noah']
     first_name = random.choice(first_name_group)
@@ -98,13 +98,13 @@ def create_new_application():
         "ResidenceStatusId": 'Rent',
         "DateOfResidence": '1/1/2010',
         "Applicant_CurrentAddress_Address1": '2220 RIDGEVIEW ST',
-        "Applicant_CurrentAddress_Zip": '76119-3117',
+        "Applicant_CurrentAddress_Zip": 76119-3117,
         # Emp info
         "Applicant_EmploymentHistory_0__Employer": 'Marsk',
         "Applicant_EmploymentHistory_0__Industry": 'EDUCATION',
         # "Applicant_EmploymentHistory_0__Position":'TEACHER',
         "Applicant_EmploymentHistory_0__DateEmployed": '8/8/2008',
-        "Applicant_EmploymentHistory_0__NetSalary": '10000',
+        "Applicant_EmploymentHistory_0__NetSalary": 10000,
         # Bank info
         "Applicant_BankName": 'Bank of US',
         "Applicant_CheckingAccount": 'Y',
@@ -140,20 +140,41 @@ def create_new_application():
     print('app number:' + app_number)
     driver.minimize_window()
 
+
 # app 创建成功后，进入checkout页面
 def checkout_application():
     # 单击下拉列表目录
     driver.find_element(By.ID,'dropdownMenu1').click()
     # 选择checkout
     driver.find_element(By.XPATH,'//*[@id="pageTitle"]/div/ul/li[3]/a').click()
-    # 输入工资信息
-    driver.find_element(By.ID,'ApplicantSalaryGarnishments_VerifiedMonthlySalary').send_keys('8000')
-    driver.find_element(By.ID,'LoanApprovals_0__Approved').send_keys('Y')
-    driver.find_element(By.ID,'LoanApprovals_0__ApprovedAmount').send_keys('1000')
-    driver.find_element(By.ID, 'planA').send_keys('1000') # 输入有问题
-    plan_a = 'Ensure the quality of your application without sacrificing speed or agility with an easy-to-use, GUI test automation tool. Our AI-powered object recognition engine and script or scriptless flexibility is unmatched, letting you test every desktop, web, and mobile application with ease.'
-    driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
-    driver.find_element(By.ID,'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
-    driver.find_element(By.ID,'ApplicantSignature').send_keys('Y')
-    # driver.find_element(By.NAME).click()
 
+    # 输入Applicant Gross Monthly Salary
+    applicant_salary_monthly_salary = driver.find_element(By.ID,'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
+    ActionChains(driver).double_click(applicant_salary_monthly_salary).perform()
+    applicant_salary_monthly_salary.send_keys(15000)
+
+    # Manager Approve info
+    driver.find_element(By.ID,'LoanApprovals_0__Approved').send_keys('Y')
+    # 输入 Credit Limit
+    credit_limit = driver.find_element(By.ID, 'CreditLimit')
+    credit_limit.clear()  # 因为有默认值，需要先清除默认值，否则会在后面追加
+    credit_limit.send_keys(1000)
+    # 规定Amount Approved
+    amount_approved = driver.find_element(By.ID, 'LoanApprovals_0__ApprovedAmount')
+    amount_approved.clear()
+    amount_approved.send_keys(1000)
+
+    # 输入Plan A 的数据
+    plan_A_input_box = driver.find_element(By.ID, 'planA')
+    ActionChains(driver).double_click(plan_A_input_box).perform()  # Plan A 需要双击后才可以输入数字清除默认数值
+    plan_A_input_box.send_keys('1000')
+    plan_a = 'RN CUST, WANTS$1000, SELF EMPLOYED 3 YRS, BUYING HER HOME 2 YR RES, HAS C/S C 28% DTI, IM OK TO ADV $1000' \
+             ' WILL BE A $4000 NL, DHPZ, 26 X 258 WILL NEED ID/POI/PP TO CLOSE VOIDED CHK AND 0 FORMER CL BC. '
+    driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
+
+    # 输入security info
+    driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
+    driver.find_element(By.ID, 'ApplicantSignature').send_keys('Y')
+    driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
+
+    print('checkout 成功')
