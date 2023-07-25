@@ -15,8 +15,6 @@ options.add_experimental_option('detach',True)
 driver = webdriver.Chrome(options=options) #实例化
 driver.maximize_window() #窗口最大化
 
-# 打开url 并且在用户名和密码放在里面
-# driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
 
 # 单击图标，回到首页
 def back_to_main_menu():
@@ -27,6 +25,8 @@ def back_to_main_menu():
 
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
+    # 打开url 并且在用户名和密码放在里面
+    driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()
@@ -44,9 +44,10 @@ def generate_new_ssn():
     new_ssn = fake.ssn()
     print('New SSN:' + new_ssn)
 
+
 # 在搜索框中输入ssn,查看是否已存在
 def search_new_ssn():
-    wait = WebDriverWait(driver,10)#等待ssn visible
+    wait = WebDriverWait(driver,10)  # 等待ssn visible
     ssn_input = wait.until(EC.element_to_be_clickable((By.ID,'SSN')))
     # ssn_input = driver.find_element(By.ID,"SSN")
     ssn_input.click()
@@ -55,27 +56,24 @@ def search_new_ssn():
     # 点击搜索按钮
     search_button = driver.find_element(By.XPATH,'//*[@id="body"]/section/form/fieldset/p/button[1]')
     search_button.click()
-    #等待表格的出现
+    # 等待表格的出现
     # wait = WebDriverWait(driver,10)
     table_prompt = EC.text_to_be_present_in_element((By.ID,'AppplicationTable'),'No data available in table')
     WebDriverWait(driver,10).until(table_prompt)
 
 
-# 在搜索页单击create button
-def click_create_btn():
-    # 单击Create button
+# 新建application, 单击create button, 然后进入新建application interview的页面，输入数据
+def create_new_application():
+    # 在搜索页面单击Create button
     button_create = driver.find_element(By.ID,"btnLink")
     button_create.click()
-    time.sleep(2)  #处理下弹窗前，需要等待，让弹窗加载2s
+    time.sleep(2)  # 处理下弹窗前，需要等待，让弹窗加载2s
 
     # 在弹出的窗口上单击 Agree button
     Button_Agree = driver.find_element(By.XPATH,'/html/body/div[1]/section/form/div/div/div/div[3]/button')
     Button_Agree.click()
-    create_new_application() # 新页面开始输入数据
 
-
-# 进入新建application interview的页面，开始输入数据
-def create_new_application():
+    # 输入数据
     driver.find_element(By.ID,'AmountRequested').send_keys(1000)
     applicant_ssn = driver.find_element(By.ID, 'Applicant_SSN')
     applicant_ssn.click()  # 单击一下applicant ssn 的输入框，否则老是无效输入
@@ -138,10 +136,9 @@ def create_new_application():
     global app_number
     app_number = driver.find_element(By.XPATH,'//*[@id="additionalHeaderInfo"]/b[1]/a').text
     print('app number:' + app_number)
-    driver.minimize_window()
 
 
-# app 创建成功后，进入checkout页面
+# app创建成功后，进入checkout页面
 def checkout_application():
     # 单击下拉列表目录
     driver.find_element(By.ID,'dropdownMenu1').click()
@@ -178,3 +175,6 @@ def checkout_application():
     driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
 
     print('checkout 成功')
+    driver.minimize_window()
+
+
