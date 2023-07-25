@@ -26,7 +26,7 @@ def back_to_main_menu():
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
-    driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
+    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()

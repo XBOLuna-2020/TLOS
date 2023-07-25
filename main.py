@@ -1,7 +1,6 @@
 
 import common_method
 
-
 # 单击credit application -> create application
 common_method.access_application_interview()
 
