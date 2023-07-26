@@ -16,13 +16,6 @@ driver = webdriver.Chrome(options=options) #实例化
 driver.maximize_window() #窗口最大化
 
 
-# 单击图标，回到首页
-def back_to_main_menu():
-    # Logo = driver.find_element(By.CLASS_NAME,'logo')
-    logo = driver.find_element(By.XPATH,'/html/body/header/div/div[1]/a')
-    logo.click()
-    print('回到首页啦!')
-
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
