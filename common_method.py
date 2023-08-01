@@ -9,17 +9,20 @@ from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
 
-#调浏览器
-options = Options() #实例化
+# 调浏览器
+options = Options()  # 实例化
 options.add_experimental_option('detach',True)
-driver = webdriver.Chrome(options=options) #实例化
-driver.maximize_window() #窗口最大化
+driver = webdriver.Chrome(options=options)  # 实例化
+driver.maximize_window()  # 窗口最大化
+
+# 声明 app_number 为全局变量
+app_number = ''
 
 
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
-    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
+    driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()
@@ -114,7 +117,7 @@ def create_new_application():
     driver.find_element(By.ID,'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
     # 输入friend phone number
     driver.find_element(By.XPATH,'//*[@id="FriendPhone_PhoneNumber"]').click()
-    driver.find_element(By.XPATH,'//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
+    driver.find_element(By.XPATH,'//*[@id="FriendPhone_PhoneNumber"]').send_keys(8598379823)
     # 输入County Name
     Select(driver.find_element(By.NAME,'Applicant.CurrentAddress.County')).select_by_visible_text('OUT OF STATE (1000)')
     # 选择 mail的radio
@@ -129,6 +132,11 @@ def create_new_application():
     global app_number
     app_number = driver.find_element(By.XPATH,'//*[@id="additionalHeaderInfo"]/b[1]/a').text
     print('app number:' + app_number)
+
+    # 将app_number保存到文件中
+    with open('app_number.txt','w') as file:
+        file.write(app_number)
+
 
 
 # app创建成功后，进入checkout页面
@@ -160,7 +168,7 @@ def checkout_application():
     plan_A_input_box.send_keys('1000')
     plan_a = 'RN CUST, WANTS$1000, SELF EMPLOYED 3 YRS, BUYING HER HOME 2 YR RES, HAS C/S C 28% DTI, IM OK TO ADV $1000' \
              ' WILL BE A $4000 NL, DHPZ, 26 X 258 WILL NEED ID/POI/PP TO CLOSE VOIDED CHK AND 0 FORMER CL BC. '
-    driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
+    driver.find_element(By.ID, ' entText1').send_keys(plan_a)
 
     # 输入security info
     driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
