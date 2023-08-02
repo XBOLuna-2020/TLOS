@@ -214,7 +214,7 @@ def payment_schedule():
     # 单击计算按钮
     driver.find_element(By.ID, 'calcInquiryBtn').click()
     time.sleep(2)
-    # 选择terms
+    # 选择terms为12期
     driver.find_element(By.ID,'selectedLoanTerm').send_keys(12)
     driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a').click()
 
