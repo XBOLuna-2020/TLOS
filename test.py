@@ -28,7 +28,7 @@ for sheet in sheets:
     # 打印工作表的名字
     print(f"工作表名字：{sheet.name}")
     print()
-1
+
 # # 通过索引获取工作表
 # worksheet = workbook.sheet_by_index(0)
 

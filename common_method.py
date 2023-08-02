@@ -9,11 +9,11 @@ from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
 
-#调浏览器
-options = Options() #实例化
+# 调浏览器
+options = Options()  # 实例化
 options.add_experimental_option('detach',True)
-driver = webdriver.Chrome(options=options) #实例化
-driver.maximize_window() #窗口最大化
+driver = webdriver.Chrome(options=options)  # 实例化
+driver.maximize_window()  # 窗口最大化
 
 
 # 单击图标，回到首页
@@ -23,10 +23,11 @@ def back_to_main_menu():
     logo.click()
     print('回到首页啦!')
 
+
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
-    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
+    driver.get('http://mgrtest:tower1@uat-svr-010110/Tower010110/')
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()
@@ -92,6 +93,7 @@ def create_new_application():
         "Applicant_Birthdate": '8/8/1998',
         "Applicant_FirstName": first_name,
         "Applicant_LastName": last_name,
+        "Applicant_MaritalStatusId": 'Unmarried',
         # Residence info
         "ResidenceStatusId": 'Rent',
         "DateOfResidence": '1/1/2010',
@@ -140,6 +142,7 @@ def create_new_application():
 
 # app创建成功后，进入checkout页面
 def checkout_application():
+    driver.get('http://mgrtest:tower1@uat-svr-010110/Tower010110/ApplicationInterview/EditApplicationInterview/1102d3d5-7f69-496e-9324-b0510147e426')
     # 单击下拉列表目录
     driver.find_element(By.ID,'dropdownMenu1').click()
     # 选择checkout
@@ -177,4 +180,29 @@ def checkout_application():
     print('checkout 成功')
     driver.minimize_window()
 
+
+def enter_identification_info():
+    driver.get('http://mgrtest:tower1@uat-svr-010110/Tower010110/ApplicationInterview/EditApplicationInterview/'
+               '1102d3d5-7f69-496e-9324-b0510147e426')
+    # 单击下拉列表目录
+    driver.find_element(By.ID, 'dropdownMenu1').click()
+    # 选择Enter_identification_info
+    driver.find_element(By.XPATH,'//*[@id="pageTitle"]/div/ul/li[4]/a').click()
+    # 选择Photo Compare
+    driver.find_element(By.ID, 'ApplicantIdentification_PhotosCompare').send_keys('Y')
+    # 输入Employment History Applicant信息
+    driver.find_element(By.ID,'ApplicantEmployment_VerifiedNetIncome').send_keys(1000)
+    # 输入References信息
+    driver.find_element(By.ID, 'References_0__ReferenceFor').send_keys('Applicant')
+    driver.find_element(By.ID, 'References_0__ReferenceRelationship').send_keys('Friends')
+    driver.find_element(By.ID, 'References_0__FirstName').send_keys('Lucus')
+    driver.find_element(By.ID, 'References_0__LastName').send_keys('Boke')
+    driver.find_element(By.ID, 'References_0__HomePhone_PhoneNumber').send_keys('6662647218')
+    # 单击create按钮
+    driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div/p[2]/input[3]').click()
+
+    driver.minimize_window()
+
+
+enter_identification_info()
 
