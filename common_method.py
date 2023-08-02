@@ -9,6 +9,7 @@ from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
 
+
 # 调浏览器
 options = Options()  # 实例化
 options.add_experimental_option('detach',True)
@@ -27,7 +28,7 @@ def back_to_main_menu():
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
-    driver.get('http://mgrtest:tower1@uat-svr-010110/Tower010110/')
+    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()
@@ -176,22 +177,21 @@ def checkout_application():
     driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
     driver.find_element(By.ID, 'ApplicantSignature').send_keys('Y')
     driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
-
+    time.sleep(2)
     print('checkout 成功')
-    driver.minimize_window()
 
 
 def enter_identification_info():
-    driver.get('http://mgrtest:tower1@uat-svr-010110/Tower010110/ApplicationInterview/EditApplicationInterview/'
-               '1102d3d5-7f69-496e-9324-b0510147e426')
     # 单击下拉列表目录
     driver.find_element(By.ID, 'dropdownMenu1').click()
     # 选择Enter_identification_info
     driver.find_element(By.XPATH,'//*[@id="pageTitle"]/div/ul/li[4]/a').click()
     # 选择Photo Compare
     driver.find_element(By.ID, 'ApplicantIdentification_PhotosCompare').send_keys('Y')
-    # 输入Employment History Applicant信息
+    # 输入Applicant Employment History 信息
+    driver.find_element(By.ID, 'ApplicantEmployment_VerifiedNetIncome').clear()
     driver.find_element(By.ID,'ApplicantEmployment_VerifiedNetIncome').send_keys(1000)
+    driver.find_element(By.ID,'ApplicantEmployment_NetIncomeVerified').send_keys('Yes')
     # 输入References信息
     driver.find_element(By.ID, 'References_0__ReferenceFor').send_keys('Applicant')
     driver.find_element(By.ID, 'References_0__ReferenceRelationship').send_keys('Friends')
@@ -200,9 +200,29 @@ def enter_identification_info():
     driver.find_element(By.ID, 'References_0__HomePhone_PhoneNumber').send_keys('6662647218')
     # 单击create按钮
     driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div/p[2]/input[3]').click()
+    time.sleep(2)
 
-    driver.minimize_window()
 
+def payment_schedule():
+    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/PaymentInquiry/FromApplication/cbc83113-06cd-4bef-9289-b052009fdaa9')
+    # 从下拉列表中进入Payment Inquiry页面
+    driver.find_element(By.ID, 'dropdownMenu1')
+    driver.find_element(By.XPATH, '//*[@id="pageTitle"]/div/ul/li[6]/a')
+    # 输入loan_amount
+    ActionChains(driver).double_click(driver.find_element(By.ID, 'Input_RequestedAmount')).perform()
+    driver.find_element(By.ID, 'Input_RequestedAmount').send_keys(1000)
+    # 单击计算按钮
+    driver.find_element(By.ID, 'calcInquiryBtn').click()
+    time.sleep(2)
+    # 选择terms
+    driver.find_element(By.ID,'selectedLoanTerm').send_keys(12)
+    driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a').click()
 
-enter_identification_info()
+    # 在pop-up上选择ok
+    prompt_object = driver.switch_to.alert
+    print(prompt_object.text)
+    prompt_object.accept()
+    time.sleep(2)
+
+payment_schedule()
 

@@ -1,6 +1,5 @@
 
 import common_method
-import checkout
 
 # 单击credit application -> create application
 common_method.access_application_interview()
@@ -17,5 +16,7 @@ common_method.create_new_application()
 # app 创建成功后，进入checkout页面
 common_method.checkout_application()
 
+# check out application 后，进入 enter/edit 页面
+common_method.enter_identification_info()
 
 
