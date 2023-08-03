@@ -19,4 +19,6 @@ common_method.checkout_application()
 # check out application 后，进入 enter/edit 页面
 common_method.enter_identification_info()
 
+# Payment Inquiry 页面输入
+common_method.payment_schedule()
 

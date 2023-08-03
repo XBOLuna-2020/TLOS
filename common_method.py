@@ -17,6 +17,9 @@ driver = webdriver.Chrome(options=options)  # 实例化
 driver.maximize_window()  # 窗口最大化
 
 
+app_number = ''
+
+
 # 单击图标，回到首页
 def back_to_main_menu():
     # Logo = driver.find_element(By.CLASS_NAME,'logo')
@@ -28,7 +31,7 @@ def back_to_main_menu():
 # 在首页中找到 Credit Application -> Application Interview 的链接并单击
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
-    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
+    driver.get('http://mgrtest:tower1@uft-svr-080801/Tower080801/')
     link_credit_application = driver.find_element(By.XPATH,'//*[@id="body"]/section/div[1]/a[1]')
     # Link_CreditApplication = driver1.find_element(By.LINK_TEXT,'Credit Application')
     link_credit_application.click()
@@ -143,12 +146,18 @@ def create_new_application():
 
 # app创建成功后，进入checkout页面
 def checkout_application():
-    driver.get('http://mgrtest:tower1@uat-svr-010110/Tower010110/ApplicationInterview/EditApplicationInterview/1102d3d5-7f69-496e-9324-b0510147e426')
-    # 单击下拉列表目录
+    """ 单击下拉列表目录
     driver.find_element(By.ID,'dropdownMenu1').click()
     # 选择checkout
     driver.find_element(By.XPATH,'//*[@id="pageTitle"]/div/ul/li[3]/a').click()
-
+    """
+    # 从首页进入check out页面
+    back_to_main_menu()
+    driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
+    driver.find_element(By.PARTIAL_LINK_TEXT, 'Checkout Application').click()
+    # 输入app number 进入页面
+    driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+    driver.find_element(By.ID, 'btnSearch').click()
     # 输入Applicant Gross Monthly Salary
     applicant_salary_monthly_salary = driver.find_element(By.ID,'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
     ActionChains(driver).double_click(applicant_salary_monthly_salary).perform()
@@ -166,9 +175,9 @@ def checkout_application():
     amount_approved.send_keys(1000)
 
     # 输入Plan A 的数据
-    plan_A_input_box = driver.find_element(By.ID, 'planA')
-    ActionChains(driver).double_click(plan_A_input_box).perform()  # Plan A 需要双击后才可以输入数字清除默认数值
-    plan_A_input_box.send_keys('1000')
+    plan_a_input_box = driver.find_element(By.ID, 'planA')
+    ActionChains(driver).double_click(plan_a_input_box).perform()  # Plan A 需要双击后才可以输入数字清除默认数值
+    plan_a_input_box.send_keys('1000')
     plan_a = 'RN CUST, WANTS$1000, SELF EMPLOYED 3 YRS, BUYING HER HOME 2 YR RES, HAS C/S C 28% DTI, IM OK TO ADV $1000' \
              ' WILL BE A $4000 NL, DHPZ, 26 X 258 WILL NEED ID/POI/PP TO CLOSE VOIDED CHK AND 0 FORMER CL BC. '
     driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
@@ -182,16 +191,24 @@ def checkout_application():
 
 
 def enter_identification_info():
+    """  从下拉列表中进入
     # 单击下拉列表目录
     driver.find_element(By.ID, 'dropdownMenu1').click()
     # 选择Enter_identification_info
     driver.find_element(By.XPATH,'//*[@id="pageTitle"]/div/ul/li[4]/a').click()
+    """
+    # 单击credit application > Enter/Edit Identification Information 链接进入
+    driver.find_element(By.PARTIAL_LINK_TEXT, 'Enter/Edit Identification Information').click()
+    # 输入app number 进入页面
+    driver.find_element(By.ID,'ApplicationNumber').send_keys(app_number)
+    driver.find_element(By.ID,'btnSearch').click()
     # 选择Photo Compare
     driver.find_element(By.ID, 'ApplicantIdentification_PhotosCompare').send_keys('Y')
-    # 输入Applicant Employment History 信息
-    driver.find_element(By.ID, 'ApplicantEmployment_VerifiedNetIncome').clear()
+    """# 输入Applicant Employment History 信息
+    ActionChains(driver).double_click(driver.find_element(By.ID, 'ApplicantEmployment_VerifiedNetIncome')).perform()
     driver.find_element(By.ID,'ApplicantEmployment_VerifiedNetIncome').send_keys(1000)
     driver.find_element(By.ID,'ApplicantEmployment_NetIncomeVerified').send_keys('Yes')
+    """
     # 输入References信息
     driver.find_element(By.ID, 'References_0__ReferenceFor').send_keys('Applicant')
     driver.find_element(By.ID, 'References_0__ReferenceRelationship').send_keys('Friends')
@@ -204,10 +221,16 @@ def enter_identification_info():
 
 
 def payment_schedule():
-    driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/PaymentInquiry/FromApplication/cbc83113-06cd-4bef-9289-b052009fdaa9')
-    # 从下拉列表中进入Payment Inquiry页面
+    """从下拉列表中进入Payment Inquiry页面
     driver.find_element(By.ID, 'dropdownMenu1')
     driver.find_element(By.XPATH, '//*[@id="pageTitle"]/div/ul/li[6]/a')
+    """
+    # 从首页进入payment inquiry页面
+    driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
+    driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry Search').click()
+    driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+    driver.find_element(By.CLASS_NAME, 'btn').click()
+
     # 输入loan_amount
     ActionChains(driver).double_click(driver.find_element(By.ID, 'Input_RequestedAmount')).perform()
     driver.find_element(By.ID, 'Input_RequestedAmount').send_keys(1000)
@@ -224,5 +247,7 @@ def payment_schedule():
     prompt_object.accept()
     time.sleep(2)
 
+
+driver.get('http://mgrtest:tower1@uft-svr-080801/Tower080801/')
 payment_schedule()
 
