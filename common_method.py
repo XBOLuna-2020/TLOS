@@ -31,11 +31,9 @@ def back_to_main_menu():
 def access_application_interview():
     # 打开url 并且在用户名和密码放在里面
     driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
+    # 依次单击链接Credit Application > Application Interview
     driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
-
-    # 单击链接Application Interview
-    link_credit_application = driver.find_element(By.XPATH, '/html/body/div/section/a[1]')
-    link_credit_application.click()
+    driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
 
 
 # 生成新的SSN，并保存成global变量
@@ -130,8 +128,7 @@ def create_new_application():
     # 单击create button
     driver.find_element(By.ID, 'btnCreate').click()
     time.sleep(2)
-    # 如果是AL的branch,则执行下面的方法
-    al_state_create_new_application()
+
     """
     下面代码适用于除了09之外的branch
     # 等待App number 出现，就是application创建成功
@@ -143,39 +140,17 @@ def create_new_application():
     app_number = driver.find_element(By.XPATH,'//*[@id="additionalHeaderInfo"]/b[1]/a').text
     print('app number:' + app_number)
     """
-def al_state_create_new_application():
-    # 如果有error 发生（090904），则返回到首页再去查看最新生成的app number
-    back_to_main_menu()
-    driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
-    driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
-    # 注意： 如果此处想要输入数字，需要加引号，因为这里应该是字符串
-    driver.find_element(By.ID, 'SSN').send_keys(new_ssn)
-    # 点击搜索按钮
-    driver.find_element(By.CLASS_NAME, 'btn-warning').click()
-    # search_button = driver.find_element(By.XPATH, '//*[@id="body"]/section/form/fieldset/p/button[1]')
-    # search_button.click()
-    # 等待ssn 的搜索结果显示出来
-    WebDriverWait(driver, 10).until(EC.text_to_be_present_in_element((By.CLASS_NAME, 'odd'), 'Credit'))
 
-    # 获取app_number
-    app_number = driver.find_element(By.XPATH, '//*[@id="AppplicationTable"]/tbody/tr[1]/td[1]/a').text
-    print('AL: NEW APP:' + app_number)
 
 # app创建成功后，进入checkout页面
 def checkout_application():
-    # 从首页进入check out页面
-    back_to_main_menu()
-    driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
-    driver.find_element(By.PARTIAL_LINK_TEXT, 'Checkout Application').click()
-    # 输入app number 进入页面
-    driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
-    driver.find_element(By.ID, 'btnSearch').click()
-
+    # 单击页面左上角的下拉框，选择checkout
+    driver.find_element(By.CLASS_NAME, 'pull-left').click()
+    driver.find_element(By.XPATH, '//*[@id="pageTitle"]/div/ul/li[3]/a').click()
     # 输入Applicant Gross Monthly Salary
     applicant_salary_monthly_salary = driver.find_element(By.ID, 'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
     ActionChains(driver).double_click(applicant_salary_monthly_salary).perform()
     applicant_salary_monthly_salary.send_keys(15000)
-
     # Manager Approve info
     driver.find_element(By.ID, 'LoanApprovals_0__Approved').send_keys('Y')
     # 输入 Credit Limit
@@ -186,7 +161,6 @@ def checkout_application():
     amount_approved = driver.find_element(By.ID, 'LoanApprovals_0__ApprovedAmount')
     amount_approved.clear()
     amount_approved.send_keys(1000)
-
     # 输入Plan A 的数据
     plan_A_input_box = driver.find_element(By.ID, 'planA')
     ActionChains(driver).double_click(plan_A_input_box).perform()  # Plan A 需要双击后才可以输入数字清除默认数值
@@ -194,7 +168,6 @@ def checkout_application():
     plan_a = 'RN CUST, WANTS$1000, SELF EMPLOYED 3 YRS, BUYING HER HOME 2 YR RES, HAS C/S C 28% DTI, IM OK TO ADV $1000' \
              ' WILL BE A $4000 NL, DHPZ, 26 X 258 WILL NEED ID/POI/PP TO CLOSE VOIDED CHK AND 0 FORMER CL BC. '
     driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
-
     # 输入security info
     driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
     driver.find_element(By.ID, 'ApplicantSignature').send_keys('Y')
@@ -204,9 +177,10 @@ def checkout_application():
 
 
 def enter_identification_info():
-    # 如果是check out 后，进入了Credit Application页面，则选择Enter_identification_info link
+    # 在Credit Application页面，则选择Enter_identification_info link
     driver.find_element(By.PARTIAL_LINK_TEXT, 'Enter/Edit Identification Information').click()
-
+    driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+    driver.find_element(By.ID, 'btnSearch').click()
     # 选择Photo Compare
     driver.find_element(By.ID, 'ApplicantIdentification_PhotosCompare').send_keys('Y')
     # 输入Applicant Employment History 信息
