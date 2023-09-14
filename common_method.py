@@ -122,14 +122,19 @@ from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
 
-class LoanSystemTester:
+
+class ApplyProcess:
     def __init__(self):
         self.driver = self.setup_driver()
 
     def setup_driver(self):
+        # 停止脚本后，不会关闭浏览器
         options = Options()
         options.add_experimental_option('detach', True)
         driver = webdriver.Chrome(options=options)
+        # 清除浏览器缓存
+        # driver.execute_script('window.sessionStorage.clear();')
+        # driver.execute_script('window.localStorage.clear();')
         driver.maximize_window()
         return driver
 
@@ -138,11 +143,10 @@ class LoanSystemTester:
         # time.sleep(1)
         logo = self.driver.find_element(By.CLASS_NAME, 'logo')
         logo.click()
-        print('回到首页啦!')
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
-        self.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
+        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/')
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
 
@@ -168,7 +172,6 @@ class LoanSystemTester:
         WebDriverWait(self.driver, 10).until(table_prompt)
 
     def create_new_application(self):
-        # ...
         # 在搜索页面单击Create button
         button_create = self.driver.find_element(By.ID, "btnLink")
         button_create.click()
@@ -286,15 +289,16 @@ class LoanSystemTester:
         self.driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
 
         # 输入security info
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
+        # self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Personal Property - Household Goods - One Signatures')
+        self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys(
+            'Endorser')
         self.driver.find_element(By.ID, 'ApplicantSignature').send_keys('Y')
+        # self.driver.find_element(By.ID, 'SpouseSignature').send_keys('Y')
         self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
         time.sleep(2)
         print('checkout 成功')
-    def enter_identification_info(self):
-        # ...
-        # driver.get('http://mgrtest:tower1@uft-svr-080801/Tower080801/IdentificationInfo/Edit/36e8ce31-eb9c-48c3-ab14-b06d000d9a2e')
 
+    def enter_identification_info(self):
         # 如果是check out 后，进入了Credit Application页面，则选择Enter_identification_info link
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Enter/Edit Identification Information').click()
         # 输入app number 进入页面
@@ -316,10 +320,10 @@ class LoanSystemTester:
         self.driver.find_element(By.ID, 'References_0__HomePhone_PhoneNumber').send_keys('6662647218')
         # 单击create按钮
         self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div/p[2]/input[3]').click()
+        print('enter id infor 成功')
         time.sleep(2)
 
     def payment_schedule(self):
-        # ...
         # 从首页进入payment inquiry页面
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry Search').click()
@@ -332,16 +336,96 @@ class LoanSystemTester:
         # 单击计算按钮
         self.driver.find_element(By.ID, 'calcInquiryBtn').click()
         time.sleep(2)
-        # 选择terms为12期
-        self.driver.find_element(By.ID, 'selectedLoanTerm').send_keys(12)
+
+        # 选择terms
+        self.driver.find_element(By.ID, 'selectedLoanTerm').send_keys(21)
+        # 单击Confirm button
         self.driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a').click()
 
         # 在pop-up上选择ok
         prompt_object = self.driver.switch_to.alert
-        print(prompt_object.text)
         prompt_object.accept()
         time.sleep(2)
 
+        # 单击print preview 按钮
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[2]').click()
+        time.sleep(2)  # 切换到payment Inquiry页面
+        handles = self.driver.window_handles
+        self.driver.switch_to.window(handles[0])
+        # 单击eSign button
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[3]').click()
+        time.sleep(3)
+        self.driver.switch_to.window(handles[0])
+        print('payment 设置成功')
+
+    def setup_account(self):
+        # 从Payment Inquiry页面开始创建Account
+        # 单击 Account Setup 按钮
+        self.driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a[2]').click()
+        time.sleep(2)
+        # 单击 Disbursements of Proceeds 中的的下拉列表
+        self.driver.find_element(By.ID, 'Disbursements_Checks_0__IsPayableToCustomerYesNo').send_keys('Y')
+        # 找到，清除默认值，并输入Disbursements of Proceeds 的 Amount
+        disbursements_balance = self.driver.find_element(By.ID, 'TotalToAccountFor').get_attribute('value')
+        disbursements_checks_amount = self.driver.find_element(By.ID, 'Disbursements_Checks_0__LoanCheckAmount')
+        ActionChains(self.driver).double_click(disbursements_checks_amount).perform()
+        disbursements_checks_amount.send_keys(disbursements_balance)
+        # 单击eSign button,等待account号出现
+        self.driver.find_element(By.ID, 'openESig').click()
+        # 设置等待account出现后才打印出来
+        account = EC.text_to_be_present_in_element((By.ID, 'additionalHeaderInfo'), 'Account')
+        WebDriverWait(self.driver, 10).until(account)
+        account_number = self.driver.find_element(By.XPATH, '//*[@id="additionalHeaderInfo"]/b[1]/a').text
+        print('account number:' + account_number)
+
     def close_driver(self):
         self.driver.quit()
+
+    def test(self):
+        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/PaymentInquiry/FromApplication/19d5cab6-41ad-4812-99b5-b07c01738134')
+
+        # 输入loan_amount
+        ActionChains(self.driver).double_click(self.driver.find_element(By.ID, 'Input_RequestedAmount')).perform()
+        self.driver.find_element(By.ID, 'Input_RequestedAmount').send_keys(1000)
+        # 单击计算按钮
+        self.driver.find_element(By.ID, 'calcInquiryBtn').click()
+        time.sleep(2)
+
+        # 选择terms为18期
+        self.driver.find_element(By.ID, 'selectedLoanTerm').send_keys(21)
+        # 单击Confirm button
+        self.driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a').click()
+
+        # 在pop-up上选择ok
+        prompt_object = self.driver.switch_to.alert
+        prompt_object.accept()
+        time.sleep(2)
+
+        # 单击print preview 按钮
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[2]').click()
+        time.sleep(2)  # 切换到payment Inquiry页面
+        handles = self.driver.window_handles
+        self.driver.switch_to.window(handles[0])
+        # 单击eSign button
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[3]').click()
+        time.sleep(3)
+        self.driver.switch_to.window(handles[0])
+
+        # 单击 Account Setup 按钮
+        self.driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a[2]').click()
+        time.sleep(2)
+        # 单击 Disbursements of Proceeds 中的的下拉列表
+        self.driver.find_element(By.ID, 'Disbursements_Checks_0__IsPayableToCustomerYesNo').send_keys('Y')
+        # 找到，清除默认值，并输入Disbursements of Proceeds 的 Amount
+        disbursements_balance = self.driver.find_element(By.ID, 'TotalToAccountFor').get_attribute('value')
+        disbursements_checks_amount = self.driver.find_element(By.ID, 'Disbursements_Checks_0__LoanCheckAmount')
+        ActionChains(self.driver).double_click(disbursements_checks_amount).perform()
+        disbursements_checks_amount.send_keys(disbursements_balance)
+        # 单击eSign button,等待account号出现
+        self.driver.find_element(By.ID, 'openESig').click()
+        # 设置等待account出现后才打印出来
+        account = EC.text_to_be_present_in_element((By.ID, 'additionalHeaderInfo'), 'Account')
+        WebDriverWait(self.driver,10).until(account)
+        account_number = self.driver.find_element(By.XPATH, '//*[@id="additionalHeaderInfo"]/b[1]/a').text
+        print('account number:' + account_number)
 
