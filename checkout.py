@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-from common_method import driver
+from common_method_original import driver
 from selenium.webdriver import ActionChains
 
 
