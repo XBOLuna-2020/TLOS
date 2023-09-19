@@ -1,116 +1,3 @@
-# import random
-# from selenium import webdriver
-# import time
-# from selenium.webdriver import ActionChains
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.support.select import Select
-# from faker import Faker
-# from selenium.webdriver.chrome.options import Options
-#
-#
-# class LoanSystemTest:
-#     def __init__(self):
-#         self.driver = webdriver.Chrome()  #使用Chrome 浏览器
-#
-#     def login(self, username, password):
-#         LoanSystemTest.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')  #MRGTEST 登录系统
-#
-#     def create_application(self):
-#         # 在搜索页面单击Create button
-#         button_create = driver.find_element(By.ID, "btnLink")
-#         button_create.click()
-#         time.sleep(2)  # 处理下弹窗前，需要等待，让弹窗加载2s
-#
-#         # 在弹出的窗口上单击 Agree button
-#         Button_Agree = driver.find_element(By.XPATH, '/html/body/div[1]/section/form/div/div/div/div[3]/button')
-#         Button_Agree.click()
-#
-#         # 输入数据
-#         driver.find_element(By.ID, 'AmountRequested').send_keys(1000)
-#         applicant_ssn = driver.find_element(By.ID, 'Applicant_SSN')
-#         applicant_ssn.click()  # 单击一下applicant ssn 的输入框，否则老是无效输入
-#         applicant_ssn.send_keys(new_ssn)
-#         # 自定义name列表，随机输入名字
-#         first_name_group = ['Alice', 'Bob', 'Charlie', 'David', 'Emily']
-#         last_name_group = ['Green', 'Baker', 'Noah']
-#         first_name = random.choice(first_name_group)
-#         last_name = random.choice(last_name_group)
-#         # 定位并输入多个字段的数据
-#         input_fields = {
-#             # Basic loan information
-#             # "AmountRequested": 1000, #不知道为啥使用循环无法有效输入
-#             "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
-#             "LoanPurposeId": 'CHRISTMAS (1)',
-#             "Applicant_Birthdate": '8/8/1998',
-#             "Applicant_FirstName": first_name,
-#             "Applicant_LastName": last_name,
-#             "Applicant_MaritalStatusId": 'Unmarried',
-#             # Residence info
-#             "ResidenceStatusId": 'Rent',
-#             "DateOfResidence": '1/1/2010',
-#             "Applicant_CurrentAddress_Address1": '2220 RIDGEVIEW ST',
-#             "Applicant_CurrentAddress_Zip": 76119 - 3117,
-#             # Emp info
-#             "Applicant_EmploymentHistory_0__Employer": 'Marsk',
-#             "Applicant_EmploymentHistory_0__Industry": 'EDUCATION',
-#             # "Applicant_EmploymentHistory_0__Position":'TEACHER',
-#             "Applicant_EmploymentHistory_0__DateEmployed": '8/8/2008',
-#             "Applicant_EmploymentHistory_0__NetSalary": 10000,
-#             # Bank info
-#             "Applicant_BankName": 'Bank of US',
-#             "Applicant_CheckingAccount": 'Y',
-#             "Applicant_SavingAccount": 'Y',
-#             # Hometown info
-#             "HomeTown": 'Dallas',
-#             "Friend": 'Jack Steve',
-#             "FriendPhone_PhoneTypeId": 'Cell',
-#             "Rent_LandlordName": 'Tom Green',
-#             "DeclaredBankruptcy": 'N'
-#         }
-#         for field, value in input_fields.items():
-#             driver.find_element(By.ID, field).send_keys(value)
-#         # 输入电子邮件
-#         driver.find_element(By.ID, 'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
-#         # 输入friend phone number
-#         driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
-#         driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
-#         # 输入职业
-#         time.sleep(5)
-#         driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER'),
-#         # 输入County Name
-#         Select(driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_visible_text(
-#             'OUT OF STATE (1000)')
-#         # 选择 mail的radio
-#         driver.find_element(By.ID, 'mail').click()
-#         # 单击create button
-#         driver.find_element(By.ID, 'btnCreate').click()
-#         time.sleep(2)
-#
-#         # 下面代码适用于除了09之外的branch
-#         # 等待App number 出现，就是application创建成功
-#         application = EC.text_to_be_present_in_element((By.ID, 'additionalHeaderInfo'), 'Application')
-#         # application字样出现代表app成功
-#         WebDriverWait(driver, 10).until(application)
-#         # 获取app_number
-#         global app_number
-#         app_number = driver.find_element(By.XPATH, '//*[@id="additionalHeaderInfo"]/b[1]/a').text
-#         print('app number:' + app_number)
-#
-#     def checkout_application(self):
-#
-#     def enter_identification_information(self):
-#
-#     def select_payment_inquiry(self):
-#
-#     def setup_account(self):
-#
-#     def check_account_creation(self):
-#
-#     def run_test(self):
-#         self.login()
-
 import random
 import time
 from selenium import webdriver
@@ -418,6 +305,60 @@ class ApplyProcess:
         time.sleep(3)
         self.driver.switch_to.window(handles[0])
         print('payment 设置成功')
+
+    def HUD(self):
+        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/PaymentInquiry/Hud1/87b73a41-286f-49ce-9389-b0810026ce95?appraisal=0.00&titleService=0.00&puboff=0.00&docfees=0')
+        # 1101 - RE Title Search
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Amount').send_keys('100')
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Name').send_keys('1101 - RE Title Search')
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Address_Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Address_Zip').send_keys('70112')
+        # 1102 - RE Closing Fee
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Name').send_keys('1102 - RE Closing Fee')
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee.Address.Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Address_Zip').send_keys('70112')
+        # 1104 - RE Title Insurance
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Name').send_keys('1104 - RE Title Insurance')
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance.Address.Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Address_Zip').send_keys('70112')
+        # 1107 - Attorney Portion
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Name').send_keys('1107 - Attorney Portion')
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion.Address.Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Address_Zip').send_keys('70112')
+        # 1108 - Underwriter Portion
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Name').send_keys('1108 - Underwriter Portion')
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portione.Address.Address1').send_keys(
+            'BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Address_Zip').send_keys('70112')
+        # 1201 - Recording Fee
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Name').send_keys('1201 - Recording Fee')
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee.Address.Address1').send_keys(
+            'BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Address_Zip').send_keys('70112')
+        # 1300 - Additional Charges
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Name').send_keys('1300 - Additional Charges')
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges.Address.Address1').send_keys(
+            'BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Address_Zip').send_keys('70112')
+        # 1301 - Survey
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Name').send_keys('1301 - Survey')
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Name_Phone_PhoneNumber').send_keys(
+            '(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Namee.Address.Address1').send_keys(
+            'BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Name_Address_Zip').send_keys('70112')
+
+
+
+
+
 
     def setup_account(self):
         # 从Payment Inquiry页面开始创建Account
