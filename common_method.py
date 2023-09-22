@@ -25,6 +25,17 @@ class ApplyProcess:
         driver.maximize_window()
         return driver
 
+    def enter_amount(self, locator_value, amount):
+        # 定位并输入金额
+        try:
+            element = self.driver.find_element(By.ID, locator_value)
+            ActionChains(self.driver).double_click(element).perform()
+            element.send_keys(amount)
+            return element
+        except Exception as e:
+            print(f"Element with '{locator_value}' not found ")
+            return None
+
     def back_to_main_menu(self):
         # driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
         # time.sleep(1)
@@ -152,7 +163,7 @@ class ApplyProcess:
 
         # 输入Applicant Gross Monthly Salary
         applicant_salary_monthly_salary = self.driver.find_element(By.ID,
-                                                              'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
+                                                                   'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
         ActionChains(self.driver).double_click(applicant_salary_monthly_salary).perform()
         applicant_salary_monthly_salary.send_keys(15000)
 
@@ -185,7 +196,7 @@ class ApplyProcess:
         time.sleep(2)
         print('checkout 成功')
 
-    def checkout_real_estate_loan(self):
+    def RE_checkout_loan(self):
         # app创建成功后，进入checkout页面
         # driver.get('http://mgrtest:tower1@uft-svr-080801/Tower080801/ApplicationCheckout/EditApplicationCheckout/36e8ce31-eb9c-48c3-ab14-b06d000d9a2e')
         # 从首页进入check out页面
@@ -198,20 +209,22 @@ class ApplyProcess:
 
         # 输入Applicant Gross Monthly Salary
         applicant_salary_monthly_salary = self.driver.find_element(By.ID,
-                                                              'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
+                                                                   'ApplicantSalaryGarnishments_VerifiedMonthlySalary')
         ActionChains(self.driver).double_click(applicant_salary_monthly_salary).perform()
         applicant_salary_monthly_salary.send_keys(15000)
 
         # Manager Approve info
         self.driver.find_element(By.ID, 'LoanApprovals_0__Approved').send_keys('Y')
         # 输入 Credit Limit
-        credit_limit = self.driver.find_element(By.ID, 'CreditLimit')
-        credit_limit.clear()  # 因为有默认值，需要先清除默认值，否则会在后面追加
-        credit_limit.send_keys(1000)
+        # credit_limit = self.driver.find_element(By.ID, 'CreditLimit')
+        # credit_limit.clear()  # 因为有默认值，需要先清除默认值，否则会在后面追加
+        # credit_limit.send_keys(2000)
+        self.enter_amount('CreditLimit', 10000)
         # 规定Amount Approved
-        amount_approved = self.driver.find_element(By.ID, 'LoanApprovals_0__ApprovedAmount')
-        amount_approved.clear()
-        amount_approved.send_keys(10000)
+        # amount_approved = self.driver.find_element(By.ID, 'LoanApprovals_0__ApprovedAmount')
+        # amount_approved.clear()
+        # amount_approved.send_keys(10000)
+        self.enter_amount('LoanApprovals_0__ApprovedAmount', 10000)
 
         # 输入Plan A 的数据
         plan_A_input_box = self.driver.find_element(By.ID, 'planA')
@@ -269,7 +282,36 @@ class ApplyProcess:
         print('enter id infor 成功')
         time.sleep(2)
 
+    def RE_enter_identification_info(self):
+        # real estate loan 输入 Identification information
+        # 如果是check out 后，进入了Credit Application页面，则选择Enter_identification_info link
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Enter/Edit Identification Information').click()
+        # 输入app number 进入页面
+        self.driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+        self.driver.find_element(By.ID, 'btnSearch').click()
 
+        # 选择Photo Compare
+        self.driver.find_element(By.ID, 'ApplicantIdentification_PhotosCompare').send_keys('Y')
+        # 输入Applicant Employment History 信息
+        '''driver.find_element(By.ID, 'ApplicantEmployment_VerifiedNetIncome').clear()
+        self.driver.find_element(By.ID, 'ApplicantEmployment_VerifiedNetIncome').send_keys(1000)
+        self.driver.find_element(By.ID, 'ApplicantEmployment_NetIncomeVerified').send_keys('Yes')
+        '''
+        # 输入References信息
+        self.driver.find_element(By.ID, 'References_0__ReferenceFor').send_keys('Applicant')
+        self.driver.find_element(By.ID, 'References_0__ReferenceRelationship').send_keys('Friends')
+        self.driver.find_element(By.ID, 'References_0__FirstName').send_keys('Lucus')
+        self.driver.find_element(By.ID, 'References_0__LastName').send_keys('Boke')
+        self.driver.find_element(By.ID, 'References_0__HomePhone_PhoneNumber').send_keys('6662647218')
+
+        # Description
+        self.driver.find_element(By.ID, 'RealEstateCollateral_0__Description').send_keys('test for real estate')
+        # 调用enter_amount 方法在Home Appraisal Value， Home Quick Sale Value等输入数据
+        self.enter_amount('RealEstateCollateral_0__AppraisalValue', 500000)
+        self.enter_amount('RealEstateCollateral_0__QuickSaleValue', 400000)
+        self.enter_amount('RealEstateCollateral_0__FirstMortgageValue', 300000)
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div/p[2]/input[3]').click()
+        print('enter RE id infor 成功')
 
     def payment_schedule(self):
         # 从首页进入payment inquiry页面
@@ -289,10 +331,8 @@ class ApplyProcess:
         self.driver.find_element(By.ID, 'selectedLoanTerm').send_keys(21)
         # 单击Confirm button
         self.driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a').click()
-
         # 在pop-up上选择ok
-        prompt_object = self.driver.switch_to.alert
-        prompt_object.accept()
+        self.driver.switch_to.alert.accept()
         time.sleep(2)
 
         # 单击print preview 按钮
@@ -306,59 +346,126 @@ class ApplyProcess:
         self.driver.switch_to.window(handles[0])
         print('payment 设置成功')
 
+    def RE_payment_schedule(self):
+        # 从首页进入payment inquiry页面
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry Search').click()
+        self.driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+        self.driver.find_element(By.CLASS_NAME, 'btn').click()
+        # 选择Loan Type为F
+        Select(self.driver.find_element(By.ID, 'loanType')).select_by_value("F")
+        # 输入loan_amount
+        self.enter_amount('Input_RequestedAmount', 5000)
+        # 输入RE Title Serv
+        self.enter_amount('reTitleServ', 100)
+        # 单击计算按钮
+        self.driver.find_element(By.ID, 'calcInquiryBtn').click()
+        time.sleep(2)
+        # 选择terms
+        Select(self.driver.find_element(By.ID, 'selectedLoanTerm')).select_by_index(1)
+        # 单击Confirm button
+        self.driver.find_element(By.XPATH, '//*[@id="confirmTerm"]/div[2]/a').click()
+        # 在pop-up上单击OK
+        self.driver.switch_to.alert.accept()
+        # 单击HUD-1按钮，进入HUD-1页面
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[2]').click()
+        time.sleep(2)
+        self.HUD()
+        # 从HUD 1 页面返回后，单击Print按钮
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[3]').click()
+        time.sleep(2)
+        # 切换到payment Inquiry页面
+        handles = self.driver.window_handles
+        self.driver.switch_to.window(handles[0])
+        time.sleep(2)
+        # 单击eSign button
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/div[13]/div[2]/div/input[4]').click()
+        # error:An error occurred: Alert Text: There was an error printing a document.
+        time.sleep(3)
+        self.driver.switch_to.window(handles[0])
+        print('RE payment 设置成功')
+
+    def RE_print_closing_documents(self):
+        # 打印相关的文档
+        self.back_to_main_menu()
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Print Real Estate Closing Document').click()
+        self.driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+        self.driver.find_element(By.CLASS_NAME, 'btn').click()
+        # 在Proof 下拉列表选择Y
+        self.driver.find_element(By.ID, 'PreCounseled').send_keys('Y')
+        # 单击 Disbursements of Proceeds 中的的下拉列表
+        self.driver.find_element(By.ID, 'Disbursements_Checks_0__IsPayableToCustomerYesNo').send_keys('Y')
+        # 找到，清除默认值，并输入Disbursements of Proceeds 的 Amount
+        disbursements_balance = self.driver.find_element(By.ID, 'TotalToAccountFor').get_attribute('value')
+        self.enter_amount('Disbursements_Checks_0__LoanCheckAmount', disbursements_balance)
+        # 单击print Closing Document button,等待Print字段出现
+        self.driver.find_element(By.ID, 'printLoanCheckBtn').click()
+        # WebDriverWait(self.driver, 10).until(EC.text_to_be_present_in_element((By.ID, 'pageAlerts'), 'Printed'))
+        print('RE Closing Documents打印完成')
+
+
     def HUD(self):
-        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/PaymentInquiry/Hud1/87b73a41-286f-49ce-9389-b0810026ce95?appraisal=0.00&titleService=0.00&puboff=0.00&docfees=0')
         # 1101 - RE Title Search
-        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Amount').send_keys('100')
+        # self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Amount').clear()
+        # self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Amount').send_keys('100')
+        self.enter_amount('Hud1_1101_RE_Title_Search_Amount', 100)
         self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Name').send_keys('1101 - RE Title Search')
-        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Phone_PhoneNumber').send_keys('(060) 157-3515')
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Phone_PhoneNumber').send_keys(6061573515)
         self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Address_Address1').send_keys('BOKE Str, NEW YORK')
         self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Address_Zip').send_keys('70112')
         # 1102 - RE Closing Fee
         self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Name').send_keys('1102 - RE Closing Fee')
-        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Phone_PhoneNumber').send_keys('(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee.Address.Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Phone_PhoneNumber').send_keys(606573515)
+        self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Address_Address1').send_keys('BOKE Str, NEW YORK')
         self.driver.find_element(By.ID, 'Hud1_1102_RE_Closing_Fee_Address_Zip').send_keys('70112')
         # 1104 - RE Title Insurance
         self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Name').send_keys('1104 - RE Title Insurance')
-        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Phone_PhoneNumber').send_keys('(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance.Address.Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Phone_PhoneNumber').send_keys('6061573515')
+        self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Address_Address1').send_keys('BOKE Str, NEW YORK')
         self.driver.find_element(By.ID, 'Hud1_1104_RE_Title_Insurance_Address_Zip').send_keys('70112')
         # 1107 - Attorney Portion
         self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Name').send_keys('1107 - Attorney Portion')
-        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Phone_PhoneNumber').send_keys('(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion.Address.Address1').send_keys('BOKE Str, NEW YORK')
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Phone_PhoneNumber').send_keys('4621573515')
+        self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Address_Address1').send_keys('BOKE Str, NEW YORK')
         self.driver.find_element(By.ID, 'Hud1_1107_Attorney_Portion_Address_Zip').send_keys('70112')
         # 1108 - Underwriter Portion
         self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Name').send_keys('1108 - Underwriter Portion')
-        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Phone_PhoneNumber').send_keys('(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portione.Address.Address1').send_keys(
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Phone_PhoneNumber').send_keys('6019573515')
+        self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Address_Address1').send_keys(
             'BOKE Str, NEW YORK')
         self.driver.find_element(By.ID, 'Hud1_1108_Underwriter_Portion_Address_Zip').send_keys('70112')
         # 1201 - Recording Fee
         self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Name').send_keys('1201 - Recording Fee')
-        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Phone_PhoneNumber').send_keys('(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee.Address.Address1').send_keys(
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Phone_PhoneNumber').send_keys('6051573515')
+        self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Address_Address1').send_keys(
             'BOKE Str, NEW YORK')
         self.driver.find_element(By.ID, 'Hud1_1201_Recording_Fee_Address_Zip').send_keys('70112')
         # 1300 - Additional Charges
         self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Name').send_keys('1300 - Additional Charges')
-        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Phone_PhoneNumber').send_keys('(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges.Address.Address1').send_keys(
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Phone_PhoneNumber').send_keys('6071573515')
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Address_Address1').send_keys(
             'BOKE Str, NEW YORK')
-        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Address_Zip').send_keys('70112')
+        self.driver.find_element(By.ID, 'Hud1_1300_Additional_Charges_Address_Zip').send_keys('39032')
         # 1301 - Survey
         self.driver.find_element(By.ID, 'Hud1_1301_Survey_Name').send_keys('1301 - Survey')
-        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Name_Phone_PhoneNumber').send_keys(
-            '(060) 157-3515')
-        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Namee.Address.Address1').send_keys(
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Phone_PhoneNumber').click()
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Phone_PhoneNumber').send_keys(
+            '9781579515')
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Address_Address1').send_keys(
             'BOKE Str, NEW YORK')
-        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Name_Address_Zip').send_keys('70112')
-
-
-
-
-
+        self.driver.find_element(By.ID, 'Hud1_1301_Survey_Address_Zip').send_keys('70112')
+        # 单击Save button
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/input[34]').click()
+        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/a').click()
+        time.sleep(2)
 
     def setup_account(self):
         # 从Payment Inquiry页面开始创建Account
@@ -384,27 +491,23 @@ class ApplyProcess:
         self.driver.quit()
 
     def test(self):
-        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/ApplicationCheckout/EditApplicationCheckout/87b73a41-286f-49ce-9389-b0810026ce95')
-        # security info 选择为 Real Estate
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Real Estate')
-        # 弹窗单击OK
-        self.driver.switch_to.alert.accept()
-        # Property Address
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_RealEstateSecurity').send_keys('100 Mercantile St')
-        # Is Real Estate Insured (Y/N)
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_RealEstateInsured').send_keys('Y')
-        # Ins Expiration Date
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_RealEstateInsuranceExpiry').send_keys('1/1/2025')
-        # Index
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_Index').send_keys('39046')
-        # County/Parish
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_County').send_keys('Parish')
-        # 选择Will this loan pay off or refinance ANY existing mortgages? (Y/N)
-        self.driver.find_element(By.ID, 'PayoffRefiAnyMortgage').send_keys('Y')
-        # 选择Is loan a Homestead loan? (Y/N)
-        self.driver.find_element(By.ID, 'HomesteadLoan').send_keys('N')
-        self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
-        time.sleep(2)
-        print('checkout 成功')
+        self.driver.get(
+            'http://mgrtest:tower1@uft-svr-020539/Tower020539/PaymentInquiry/FromApplication/931dbce8-c562-4694-add4-b08500332771')
+        app_number = 30622
 
-
+        self.back_to_main_menu()
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Print Real Estate Closing Document').click()
+        self.driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+        self.driver.find_element(By.CLASS_NAME, 'btn').click()
+        # 在Proof 下拉列表选择Y
+        self.driver.find_element(By.ID, 'PreCounseled').send_keys('Y')
+        # 单击 Disbursements of Proceeds 中的的下拉列表
+        self.driver.find_element(By.ID, 'Disbursements_Checks_0__IsPayableToCustomerYesNo').send_keys('Y')
+        # 找到，清除默认值，并输入Disbursements of Proceeds 的 Amount
+        disbursements_balance = self.driver.find_element(By.ID, 'TotalToAccountFor').get_attribute('value')
+        self.enter_amount('Disbursements_Checks_0__LoanCheckAmount', disbursements_balance)
+        # 单击print Closing Document button,等待Print字段出现
+        self.driver.find_element(By.ID, 'printLoanCheckBtn').click()
+        WebDriverWait(self.driver, 10).until(EC.text_to_be_present_in_element((By.ID, 'pageAlerts'), 'Printed'))
+        print('RE Closing Documents打印完成')
