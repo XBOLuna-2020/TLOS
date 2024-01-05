@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
+import cancel_pending_application
 
 
 class ApplyProcess:
@@ -18,6 +19,8 @@ class ApplyProcess:
         # 停止脚本后，不会关闭浏览器
         options = Options()
         options.add_experimental_option('detach', True)
+        # 添加参数清除缓存
+        options.add_argument("--incongnito")
         driver = webdriver.Chrome(options=options)
         # 清除浏览器缓存
         # driver.execute_script('window.sessionStorage.clear();')
@@ -37,14 +40,48 @@ class ApplyProcess:
             return None
 
     def back_to_main_menu(self):
-        # driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
-        # time.sleep(1)
         logo = self.driver.find_element(By.CLASS_NAME, 'logo')
         logo.click()
 
+    def cancel_pending_app(self):
+        self.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
+        try:
+            # 判断页面是否有pending application的表格出现
+            table = self.driver.find_element(By.CLASS_NAME, 'table')
+            # 获取所有待处理申请的行
+            rows = self.driver.find_elements(By.TAG_NAME, 'tr')
+            # 跳过首行标题行
+            for row in rows[1:]:
+                # 获取每行的App Number和URL
+                app_number = row.find_element(By.XPATH, 'td[2]').text
+                url_element = row.find_element(By.XPATH, 'td[3]/a')
+                url = url_element.get_attribute('href')
+                # 单击链接，进入app页
+                self.driver.get(url)
+                # 进入app页后，下拉到页面底部
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                # Select 'Yes' from the Cancel 下拉列表
+                cancel_dropdown = self.driver.find_element(By.ID, 'Cancelled')
+                cancel_dropdown.send_keys('Yes')
+                # 单击Update 按钮
+                updated_button = self.driver.find_element(By.ID, 'btnUpdate')
+                updated_button.click()
+                # 如果单击update按钮后，页面报错，则需要进一步更新页面
+                cancel_pending_application.update_app_source_onlinelending()
+                # 如果是Source 选择的是‘Online Lending’,则先把source 改为别的
+                # 如果单击更新按钮后，页面没有报错，则成功更新
+                print('App:' + app_number + '已处理')
+                # 返回到首页
+                self.driver.back_to_main_menu
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+        finally:
+            pass
+
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
-        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/')
+        self.driver.get('http://sysoptest:tower1@uat-svr-090904/Tower090904/')
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
 
@@ -129,8 +166,13 @@ class ApplyProcess:
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
         # 输入职业
-        time.sleep(5)
-        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER'),
+        time.sleep(10)
+        job_title = self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position')
+        job_title_dropdown = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'Applicant_EmploymentHistory_0__Position'))
+        )
+        Select(job_title_dropdown).select_by_index(2)
+        # time.sleep(5)
         # 输入County Name
         Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_visible_text(
             'OUT OF STATE (1000)')
@@ -172,7 +214,7 @@ class ApplyProcess:
         # 输入 Credit Limit
         credit_limit = self.driver.find_element(By.ID, 'CreditLimit')
         credit_limit.clear()  # 因为有默认值，需要先清除默认值，否则会在后面追加
-        credit_limit.send_keys(1000)
+        credit_limit.send_keys(2500)
         # 规定Amount Approved
         amount_approved = self.driver.find_element(By.ID, 'LoanApprovals_0__ApprovedAmount')
         amount_approved.clear()
@@ -187,9 +229,9 @@ class ApplyProcess:
         self.driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
 
         # 输入security info
-        # self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Personal Property - Household Goods - One Signatures')
-        self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys(
-            'Endorser')
+        # self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Auto')
+        self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Endorser')
+        # 选择签名
         self.driver.find_element(By.ID, 'ApplicantSignature').send_keys('Y')
         # self.driver.find_element(By.ID, 'SpouseSignature').send_keys('Y')
         self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
@@ -216,16 +258,9 @@ class ApplyProcess:
         # Manager Approve info
         self.driver.find_element(By.ID, 'LoanApprovals_0__Approved').send_keys('Y')
         # 输入 Credit Limit
-        # credit_limit = self.driver.find_element(By.ID, 'CreditLimit')
-        # credit_limit.clear()  # 因为有默认值，需要先清除默认值，否则会在后面追加
-        # credit_limit.send_keys(2000)
         self.enter_amount('CreditLimit', 10000)
         # 规定Amount Approved
-        # amount_approved = self.driver.find_element(By.ID, 'LoanApprovals_0__ApprovedAmount')
-        # amount_approved.clear()
-        # amount_approved.send_keys(10000)
         self.enter_amount('LoanApprovals_0__ApprovedAmount', 10000)
-
         # 输入Plan A 的数据
         plan_A_input_box = self.driver.find_element(By.ID, 'planA')
         ActionChains(self.driver).double_click(plan_A_input_box).perform()  # Plan A 需要双击后才可以输入数字清除默认数值
@@ -233,7 +268,6 @@ class ApplyProcess:
         plan_a = 'RN CUST, WANTS$1000, SELF EMPLOYED 3 YRS, BUYING HER HOME 2 YR RES, HAS C/S C 28% DTI, IM OK TO ADV $1000' \
                  ' WILL BE A $4000 NL, DHPZ, 26 X 258 WILL NEED ID/POI/PP TO CLOSE VOIDED CHK AND 0 FORMER CL BC. '
         self.driver.find_element(By.ID, 'commentText1').send_keys(plan_a)
-
         # security info 选择为 Real Estate
         self.driver.find_element(By.ID, 'SecurityOnLoan1_SecurityOnLoan').send_keys('Real Estate')
         # 弹窗单击OK
@@ -248,6 +282,8 @@ class ApplyProcess:
         self.driver.find_element(By.ID, 'SecurityOnLoan1_Index').send_keys('39046')
         # County/Parish
         self.driver.find_element(By.ID, 'SecurityOnLoan1_County').send_keys('Parish')
+        # 选择签名下拉框
+        self.driver.find_element(By.ID, 'ApplicantSignature').send_keys('Y')
         # 选择Will this loan pay off or refinance ANY existing mortgages? (Y/N)
         self.driver.find_element(By.ID, 'PayoffRefiAnyMortgage').send_keys('Y')
         # 选择Is loan a Homestead loan? (Y/N)
@@ -404,7 +440,6 @@ class ApplyProcess:
         # WebDriverWait(self.driver, 10).until(EC.text_to_be_present_in_element((By.ID, 'pageAlerts'), 'Printed'))
         print('RE Closing Documents打印完成')
 
-
     def HUD(self):
         # 1101 - RE Title Search
         # self.driver.find_element(By.ID, 'Hud1_1101_RE_Title_Search_Amount').clear()
@@ -487,27 +522,23 @@ class ApplyProcess:
         account_number = self.driver.find_element(By.XPATH, '//*[@id="additionalHeaderInfo"]/b[1]/a').text
         print('account number:' + account_number)
 
+    def RE_setup_account(self):
+        # 从首页进入payment inquiry页面
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
+        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry Search').click()
+        self.driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
+        self.driver.find_element(By.CLASS_NAME, 'btn').click()
+        # 单击 Account Setup 按钮 从payment 页面开始和personal一样了
+        self.setup_account()
+
+
     def close_driver(self):
         self.driver.quit()
 
-    def test(self):
-        self.driver.get(
-            'http://mgrtest:tower1@uft-svr-020539/Tower020539/PaymentInquiry/FromApplication/931dbce8-c562-4694-add4-b08500332771')
-        app_number = 30622
 
-        self.back_to_main_menu()
-        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Payment Inquiry').click()
-        self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Print Real Estate Closing Document').click()
-        self.driver.find_element(By.ID, 'ApplicationNumber').send_keys(app_number)
-        self.driver.find_element(By.CLASS_NAME, 'btn').click()
-        # 在Proof 下拉列表选择Y
-        self.driver.find_element(By.ID, 'PreCounseled').send_keys('Y')
-        # 单击 Disbursements of Proceeds 中的的下拉列表
-        self.driver.find_element(By.ID, 'Disbursements_Checks_0__IsPayableToCustomerYesNo').send_keys('Y')
-        # 找到，清除默认值，并输入Disbursements of Proceeds 的 Amount
-        disbursements_balance = self.driver.find_element(By.ID, 'TotalToAccountFor').get_attribute('value')
-        self.enter_amount('Disbursements_Checks_0__LoanCheckAmount', disbursements_balance)
-        # 单击print Closing Document button,等待Print字段出现
-        self.driver.find_element(By.ID, 'printLoanCheckBtn').click()
-        WebDriverWait(self.driver, 10).until(EC.text_to_be_present_in_element((By.ID, 'pageAlerts'), 'Printed'))
-        print('RE Closing Documents打印完成')
+
+
+
+
+
+
