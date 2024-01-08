@@ -44,8 +44,9 @@ class ApplyProcess:
         logo.click()
 
     def cancel_pending_app(self):
-        self.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
+        #
         try:
+            # self.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
             # 判断页面是否有pending application的表格出现
             table = self.driver.find_element(By.CLASS_NAME, 'table')
             # 获取所有待处理申请的行
@@ -67,7 +68,7 @@ class ApplyProcess:
                 updated_button = self.driver.find_element(By.ID, 'btnUpdate')
                 updated_button.click()
                 # 如果单击update按钮后，页面报错，则需要进一步更新页面
-                cancel_pending_application.update_app_source_onlinelending()
+                self.update_app_source_onlinelending()
                 # 如果是Source 选择的是‘Online Lending’,则先把source 改为别的
                 # 如果单击更新按钮后，页面没有报错，则成功更新
                 print('App:' + app_number + '已处理')
@@ -78,6 +79,24 @@ class ApplyProcess:
             print(f"An error occurred: {str(e)}")
         finally:
             pass
+    # Source 改变
+    def update_app_source_onlinelending(self):
+        # Source 改为5
+        self.driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
+        # County 选择01
+        self.driver.find_element(By.ID, 'countyName').send_keys('Adams (01)')
+        # 选中地址的单选项
+        self.driver.find_element(By.ID, 'verifiedAddressOverridden').click()
+        # 输入朋友的电话
+        self.driver.find_element(By.ID, 'FriendPhone_PhoneNumber').send_keys('(123) 456-7890')
+        # Employment History Applicant_Industry
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
+        time.sleep(3)
+        # Employment History Applicant_Job Title
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
+        # Residence Information_Approximate Value
+        self.driver.find_element(By.ID, 'Owned_ApproximateValue').send_keys('3000000')
+        self.driver.find_element(By.ID, 'btnUpdate').click()
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面

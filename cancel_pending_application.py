@@ -1,7 +1,7 @@
 # # 导入浏览器驱动
 from selenium import webdriver
 # from selenium.webdriver.chrome.options import Options
-# import time
+import time
 from selenium.webdriver.common.by import By
 # from selenium.common.exceptions import WebDriverException
 # import pandas as pd
@@ -36,7 +36,24 @@ def cancel_pending_app(self):
         self.driver.back_to_main_menu
 
 def update_app_source_onlinelending(self):
-    source = driver.find_element(By.ID, 'LoanSourceId')
-    source.clear()
-    source.send_keys('CUSTOMER RECOMMENDED (5)')
+    # Source 改为5
+    driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
+    # County 选择01
+    driver.find_element(By.ID, 'countyName').send_keys('Adams (01)')
+    # 选中地址的单选项
+    driver.find_element(By.ID, 'verifiedAddressOverridden').click()
+    # 输入朋友的电话
+    driver.find_element(By.ID, 'FriendPhone_PhoneNumber').send_keys('(123) 456-7890')
+    # Employment History Applicant_Industry
+    driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
+    time.sleep(3)
+    # Employment History Applicant_Job Title
+    driver.find_element(By.ID,'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
+    # Residence Information_Approximate Value
+    driver.find_element(By.ID, 'Owned_ApproximateValue').send_keys('3000000')
+    driver.find_element(By.ID, 'btnUpdate').click()
+
+
+
+
 
