@@ -14,7 +14,6 @@ import cancel_pending_application
 class ApplyProcess:
     def __init__(self):
         self.driver = self.setup_driver()
-
     def setup_driver(self):
         # 停止脚本后，不会关闭浏览器
         options = Options()
@@ -44,58 +43,66 @@ class ApplyProcess:
         logo.click()
 
     def cancel_pending_app(self):
-        #
-        try:
-            # self.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
-            # 判断页面是否有pending application的表格出现
-            table = self.driver.find_element(By.CLASS_NAME, 'table')
-            # 获取所有待处理申请的行
+        self.driver.get('http://mgrtest:tower1@uft-svr-010110/Tower010110/')
+        # 获取所有行（包括标题行）
+        rows = self.driver.find_elements(By.TAG_NAME, 'tr')
+        # 跳过标题行，从第二行开始迭代
+        for _ in range(1, len(rows)):
+            # 每次循环重新获取所有行（因为页面已经刷新）
             rows = self.driver.find_elements(By.TAG_NAME, 'tr')
-            # 跳过首行标题行
-            for row in rows[1:]:
-                # 获取每行的App Number和URL
-                app_number = row.find_element(By.XPATH, 'td[2]').text
-                url_element = row.find_element(By.XPATH, 'td[3]/a')
-                url = url_element.get_attribute('href')
-                # 单击链接，进入app页
-                self.driver.get(url)
-                # 进入app页后，下拉到页面底部
-                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                # Select 'Yes' from the Cancel 下拉列表
-                cancel_dropdown = self.driver.find_element(By.ID, 'Cancelled')
-                cancel_dropdown.send_keys('Yes')
-                # 单击Update 按钮
-                updated_button = self.driver.find_element(By.ID, 'btnUpdate')
-                updated_button.click()
-                # 如果单击update按钮后，页面报错，则需要进一步更新页面
-                self.update_app_source_onlinelending()
-                # 如果是Source 选择的是‘Online Lending’,则先把source 改为别的
-                # 如果单击更新按钮后，页面没有报错，则成功更新
-                print('App:' + app_number + '已处理')
-                # 返回到首页
-                self.driver.back_to_main_menu
+            row = rows[_]
+            # 获取每行的App Number和URL
+            app_number = row.find_element(By.XPATH, '//*[@id="body"]/section/table/tbody/tr[2]/td[2]').text
+            url_element = row.find_element(By.XPATH, '//*[@id="body"]/section/table/tbody/tr[2]/td[3]/a')
+            url = url_element.get_attribute('href')
+            # 单击链接，进入app页
+            self.driver.get(url)
+            # 进入app页后，下拉到页面底部
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Select 'Yes' from the Cancel 下拉列表
+            cancel_dropdown = self.driver.find_element(By.ID, 'Cancelled')
+            cancel_dropdown.send_keys('Yes')
+            # 单击Update 按钮
+            updated_button = self.driver.find_element(By.ID, 'btnUpdate')
+            updated_button.click()
+            # 如果单击update按钮后，页面报错，则需要进一步更新页面
+            self.update_app_source_onlinelending()
+            # 如果是Source 选择的是‘Online Lending’,则先把source 改为别的
+            # 如果单击更新按钮后，页面没有报错，则成功更新
+            print('App:' + app_number + '已处理')
+            # 返回到首页
+            self.driver.find_element(By.CLASS_NAME, 'logo').click()
 
-        except Exception as e:
-            print(f"An error occurred: {str(e)}")
-        finally:
-            pass
+
     # Source 改变
     def update_app_source_onlinelending(self):
         # Source 改为5
         self.driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
-        # County 选择01
-        self.driver.find_element(By.ID, 'countyName').send_keys('Adams (01)')
-        # 选中地址的单选项
-        self.driver.find_element(By.ID, 'verifiedAddressOverridden').click()
+        # 选中地址的单选项，总是报错
+        # 修改原来的地址
+        Applicant_CurrentAddress_Address = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Address1')
+        Applicant_CurrentAddress_Address.clear()
+        Applicant_CurrentAddress_Address.send_keys('1311 ROOSEVELT ST')
+        Applicant_CurrentAddress_Zip = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Zip')
+        Applicant_CurrentAddress_Zip.clear()
+        Applicant_CurrentAddress_Zip.send_keys('39567-6455')
+        # County 选择30
+        Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_value('Jackson (30)')
         # 输入朋友的电话
-        self.driver.find_element(By.ID, 'FriendPhone_PhoneNumber').send_keys('(123) 456-7890')
+        # 输入friend phone number
+        self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
+        self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
+        # friend_phone = self.driver.find_element(By.ID, 'FriendPhone_PhoneNumber')
+        # ActionChains(self.driver).double_click(friend_phone).perform()
         # Employment History Applicant_Industry
         self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
-        time.sleep(3)
+        time.sleep(2)
         # Employment History Applicant_Job Title
         self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
         # Residence Information_Approximate Value
-        self.driver.find_element(By.ID, 'Owned_ApproximateValue').send_keys('3000000')
+        residence_information_approximate_value = self.driver.find_element(By.ID, 'Owned_ApproximateValue')
+        ActionChains(self.driver).double_click(residence_information_approximate_value).perform()
+        residence_information_approximate_value.send_keys(3000000)
         self.driver.find_element(By.ID, 'btnUpdate').click()
 
     def access_application_interview(self):
