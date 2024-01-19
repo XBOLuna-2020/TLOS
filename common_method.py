@@ -8,24 +8,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
-import cancel_pending_application
+# import cancel_pending_application
 
 
 class ApplyProcess:
     def __init__(self):
         self.driver = self.setup_driver()
+
     def setup_driver(self):
         # 停止脚本后，不会关闭浏览器
         options = Options()
         options.add_experimental_option('detach', True)
-        # 添加参数清除缓存
-        options.add_argument("--incongnito")
         driver = webdriver.Chrome(options=options)
-        # 清除浏览器缓存
-        # driver.execute_script('window.sessionStorage.clear();')
-        # driver.execute_script('window.localStorage.clear();')
         driver.maximize_window()
-        return driver
 
     def enter_amount(self, locator_value, amount):
         # 定位并输入金额
@@ -107,7 +102,7 @@ class ApplyProcess:
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
-        self.driver.get('http://sysoptest:tower1@uat-svr-090904/Tower090904/')
+        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/')
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
 
@@ -165,7 +160,8 @@ class ApplyProcess:
             # Residence info
             "ResidenceStatusId": 'Rent',
             "DateOfResidence": '1/1/2010',
-            "Applicant_CurrentAddress_Address1": '2220 RIDGEVIEW ST',
+            "Applicant_CurrentAddress_Address1": 'MO PLANT GUARD STREET NO 123, NORTH LAND AREA NO25',
+            "Applicant_CurrentAddress_Address2":'APRTMENT NO 5, UNIT 4, LEVEL 14, ROOM NUMBER 1405',
             "Applicant_CurrentAddress_Zip": 76119 - 3117,
             # Emp info
             "Applicant_EmploymentHistory_0__Employer": 'Marsk',
@@ -557,9 +553,6 @@ class ApplyProcess:
         # 单击 Account Setup 按钮 从payment 页面开始和personal一样了
         self.setup_account()
 
-
-    def close_driver(self):
-        self.driver.quit()
 
 
 
