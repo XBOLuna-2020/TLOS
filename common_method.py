@@ -17,10 +17,25 @@ class ApplyProcess:
 
     def setup_driver(self):
         # 停止脚本后，不会关闭浏览器
-        options = Options()
-        options.add_experimental_option('detach', True)
-        driver = webdriver.Chrome(options=options)
+        # options = Options()
+        # options.add_experimental_option('detach', True)
+        # driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome()
         driver.maximize_window()
+        return driver # 千万不要忘记返回值 driver
+
+    # def setup_driver(self):
+    #     try:
+    #         options = Options()
+    #         options.add_experimental_option('detach', True)
+    #         driver = webdriver.Chrome(options=options)
+    #         driver.maximize_window()
+    #         return driver
+    #     except Exception as e:
+    #         print(f"Error setting up the driver: {e}")
+    #         return None
+
+
 
     def enter_amount(self, locator_value, amount):
         # 定位并输入金额
@@ -57,11 +72,61 @@ class ApplyProcess:
             # Select 'Yes' from the Cancel 下拉列表
             cancel_dropdown = self.driver.find_element(By.ID, 'Cancelled')
             cancel_dropdown.send_keys('Yes')
-            # 单击Update 按钮
+            # 单击Update 按钮# 单击Update 按钮
             updated_button = self.driver.find_element(By.ID, 'btnUpdate')
             updated_button.click()
+            # 如果页面报错，更新报错的section
+            max_attempts = 3  # 设置最大尝试次数，防止无限循环
+            for attempt in range(max_attempts):
+                try:
+                    # 在这里应该检查是否有错误消息，如果有，则抛出异常，触发except分支
+                    error_message_element = self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/fieldset/div[1]')
+                    error_messages = error_message_element.text.split('\n')
+
+                    # 根据不同的错误消息执行不同的操作
+                    for error_message in error_messages:
+                        if 'Online Lending is not a valid Loan Source' in error_message:
+                            self.handle_source_error()
+                        elif 'Choose address or update original entry (AI)' in error_message:
+                            self.handle_address_error()
+                        elif 'County is required for the physical address' in error_message:
+                            self.hanle_county_error()
+                        elif 'The Industry field is required' in error_message:
+                            self.handle_industry_error()
+                        elif 'The Job Title field is required' in error_message:
+                            self.handle_job_title_error()
+                        elif 'Previous employment is required if duration of current employment is less than 3 years.' in error_message:
+                            self.handle_previous_employment_error()
+                        elif 'Previous employment duration is required if duration of current employment is less than 3 years' in error_message:
+                            continue
+                            # self.handle_previous_employment_duration_error()
+                        elif 'Bank Name is required' in error_message:
+                            self.handle_bank_name_error()
+                        elif 'Please choose Y or N for Saving Account' in error_messages or 'Please choose Y or N for Checking Account' in error_messages:
+                            continue
+                        elif 'Friend Phone Number is required' in error_message:
+                            self.handle_friend_phone_number_error()
+                        elif 'The Property Description field is required' in error_message:
+                            self.handle_own_residence_info_error()
+                        elif 'Landlord\'s Name is required.' in error_message:
+                            self.handle_landlord_name_error()
+                    # 进入app页后，下拉到页面底部
+                    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # 更新完页面后，应该单击按钮，但是此处单击按钮后没生效，于是单击了两遍
+                    self.driver.find_element(By.XPATH, '//*[@id="btnUpdate"]').click()
+                    self.driver.find_element(By.XPATH, '//*[@id="btnUpdate"]').click()
+                    print('单击了更新按钮')
+                    time.sleep(5)
+                    # 每次更新后，都单击update button
+
+
+                   # 如果没有错误消息，说明更新成功，跳出循环
+                    break
+                except Exception as e:
+                    print(f'An error occurred while updateing: {str(e)}')
+
             # 如果单击update按钮后，页面报错，则需要进一步更新页面
-            self.update_app_source_onlinelending()
+            # self.update_app_according_error()
             # 如果是Source 选择的是‘Online Lending’,则先把source 改为别的
             # 如果单击更新按钮后，页面没有报错，则成功更新
             print('App:' + app_number + '已处理')
@@ -69,10 +134,50 @@ class ApplyProcess:
             self.driver.find_element(By.CLASS_NAME, 'logo').click()
 
 
-    # Source 改变
-    def update_app_source_onlinelending(self):
-        # Source 改为5
-        self.driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
+    def update_app_according_error(self):
+        # 如果页面报错，更新报错的section
+        max_attempts = 3  # 设置最大尝试次数，防止无限循环
+        for attempt in range(max_attempts):
+            try:
+                # 在这里应该检查是否有错误消息，如果有，则抛出异常，触发except分支
+                error_message_element = self.driver.find_element(By.CLASS_NAME,'validation-summary-errors')
+                error_message = error_message_element.text
+                # 根据不同的错误消息执行不同的操作
+                if 'Choose address or update original entry (AI)' in error_message:
+                    self.handle_address_error()
+                elif 'Online Lending is not a valid Loan Source' in error_message:
+                    self.handle_source_error()
+                elif 'County is required for the physical address' in error_message:
+                    self.hanle_county_error()
+                elif 'The Industry field is required' in error_message:
+                    self.handle_industry_error()
+                elif 'The Job Title field is required' in error_message:
+                    self.handle_job_title_error()
+                elif 'Previous employment is required if duration of current employment is less than 3 years.' in error_message:
+                    self.handle_previous_employment_error()
+                elif 'Bank Name is required.' in error_message:
+                    self.handle_bank_name_error()
+                elif 'Friend Phone Number is required' in error_message:
+                    self.handle_friend_phone_number_error()
+                elif 'The Property Description field is required' in error_message or 'Approximate Value is required' in error_message:
+                    self.handle_own_residence_info_error()
+                elif 'Landlord Name is required' in error_message:
+                    self.handle_landlord_name_error()
+
+                # 如果没有错误消息，说明更新成功，跳出循环
+                break
+
+            except Exception as e:
+                print(f'An error occurred while updateing: {str(e)}')
+        if attempt < max_attempts -1:
+            # 在下一次的尝试前，等待一段时间
+            time.sleep(2)
+        else:
+            # 达到最大尝试次数， 可以选择抛出异常或者采取其他措施
+            print('Maximum attempts reached. Updated unsuccessful.')
+
+    # 定义处理不同错误的方法
+    def handle_address_error(self):
         # 选中地址的单选项，总是报错
         # 修改原来的地址
         Applicant_CurrentAddress_Address = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Address1')
@@ -81,28 +186,78 @@ class ApplyProcess:
         Applicant_CurrentAddress_Zip = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Zip')
         Applicant_CurrentAddress_Zip.clear()
         Applicant_CurrentAddress_Zip.send_keys('39567-6455')
+        print()
+
+    def handle_source_error(self):
+        self.driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
+        print('Handling Source Error')
+
+    def hanle_county_error(self):
         # County 选择30
-        Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_value('Jackson (30)')
+        Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_value(
+            'Jackson (30)')
+        print('Handling County Error')
+
+    def handle_industry_error(self):
+        # Employment History Applicant_Industry
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
+        time.sleep(2)
+        print('Handling Industry Error')
+
+    def handle_job_title_error(self):
+        # Employment History Applicant_Job Title
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
+        print('Handling Job Title Error')
+
+    def handle_previous_employment_error(self):
+        self.driver.find_element(By.ID,'Applicant_EmploymentHistory_0__PreviousEmployment').send_keys('Microsoft')
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__PreviousDurationYears').send_keys(4)
+        print('Handling Previous Employment Error')
+
+    def handle_previous_employment_duration_error(self):
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__PreviousDurationYears').send_keys(4)
+        print('Handling Previous Employment Error')
+
+    def handle_bank_name_error(self):
+        # If the bank info is empty, fill the field
+        self.driver.find_element(By.ID, 'Applicant_BankName').send_keys('Bank US')
+        self.driver.find_element(By.ID, 'Applicant_CheckingAccount').send_keys('Y')
+        self.driver.find_element(By.ID, 'Applicant_SavingAccount').send_keys('Y')
+        print('Handing Bank Info Error')
+
+    def handle_friend_phone_number_error(self):
         # 输入朋友的电话
         # 输入friend phone number
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
         # friend_phone = self.driver.find_element(By.ID, 'FriendPhone_PhoneNumber')
         # ActionChains(self.driver).double_click(friend_phone).perform()
-        # Employment History Applicant_Industry
-        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
-        time.sleep(2)
-        # Employment History Applicant_Job Title
-        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
-        # Residence Information_Approximate Value
-        residence_information_approximate_value = self.driver.find_element(By.ID, 'Owned_ApproximateValue')
-        ActionChains(self.driver).double_click(residence_information_approximate_value).perform()
-        residence_information_approximate_value.send_keys(3000000)
-        self.driver.find_element(By.ID, 'btnUpdate').click()
+        print('Handling Friend Phone Error')
+
+    def handle_own_residence_info_error(self):
+        # 如果自己购买房产，需要填写下列信息
+        # Date Purchased
+        self.driver.find_element(By.ID, 'Owned_DatePurchased').send_keys('1/1/2024')
+        # Purchase Price
+        purchase_price = self.driver.find_element(By.ID, 'Owned_PurchasePrice')
+        ActionChains(self.driver).double_click(purchase_price).perform()
+        purchase_price.send_keys(3000000)
+        # Approximate Value
+        approximate_value = self.driver.find_element(By.ID, 'Owned_ApproximateValue')
+        ActionChains(self.driver).double_click(approximate_value).perform()
+        approximate_value.send_keys(3000000)
+        # Property Description
+        self.driver.find_element(By.ID, 'Owned_ResidenceCategoryId').send_keys('ONE STORY BRICK, 3 BEDROOMS')
+        print('Handling Own Residence Info Error')
+
+    def handle_landlord_name_error(self):
+        self.driver.find_element(By.ID, 'Rent_LandlordName').send_keys('William')
+        self.driver.find_element(By.ID, 'Rent_RentAmount').send_keys(500)
+        print('Handling Rent Residence Info Error')
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
-        self.driver.get('http://mgrtest:tower1@uft-svr-020539/Tower020539/')
+        self.driver.get('http://mgrtest:tower1@uft-svr-080801/Tower080801/')
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
 
