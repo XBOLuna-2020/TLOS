@@ -3,6 +3,7 @@ from common_method import ApplyProcess
 loan = ApplyProcess()
 
 # 创建RE loan
+# loan.cancel_pending_app()
 loan.access_application_interview()
 loan.generate_new_ssn()
 loan.search_new_ssn()

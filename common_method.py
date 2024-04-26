@@ -14,16 +14,20 @@ from selenium.webdriver.chrome.options import Options
 class ApplyProcess:
     def __init__(self):
         self.driver = self.setup_driver()
+        self.base_url = self.branch_url() #在初始化时调用方法并储存URL
 
     def setup_driver(self):
-        # 停止脚本后，不会关闭浏览器
-        # options = Options()
-        # options.add_experimental_option('detach', True)
-        # driver = webdriver.Chrome(options=options)
         driver = webdriver.Chrome()
         driver.maximize_window()
         return driver  #千万不要忘记返回值 driver
 
+    def branch_url(self):
+        # 提示用户输入URL 并返回
+        print("Please enter the branch number, like 010110.")
+        branch = input().strip()
+        if not branch.isdigit():
+            raise ValueError("Branch number must be numeric.")
+        return f'http://mgrtest:tower1@uft-svr-{branch}/tower{branch}/'
 
     def enter_amount(self, locator_value, amount):
         # 定位并输入金额
@@ -41,7 +45,8 @@ class ApplyProcess:
         logo.click()
 
     def cancel_pending_app(self):
-        self.driver.get('http://mgrtest:tower1@uft-svr-090904/Tower090904/')
+        # self.driver.get('http://mgrtest:tower1@uft-svr-020539/tower020539/')
+        self.driver.get(self.branch_url())
         # 获取所有行（包括标题行）
         from selenium.webdriver.common.by import By
         rows = self.driver.find_elements(By.TAG_NAME, 'tr')
@@ -283,7 +288,7 @@ class ApplyProcess:
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
-        self.driver.get('http://mgrtest:tower1@uft-svr-070377/tower070377/')
+        self.driver.get(self.base_url)
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Credit Application').click()
         self.driver.find_element(By.PARTIAL_LINK_TEXT, 'Application Interview').click()
 
@@ -343,7 +348,7 @@ class ApplyProcess:
             "DateOfResidence": '1/1/2010',
             "Applicant_CurrentAddress_Address1": '136 W LOUISIANA AVE',
             "Applicant_CurrentAddress_Address2":'APRTMENT NO 5, UNIT 4, LEVEL 14, ROOM NUMBER 1405',
-            "Applicant_CurrentAddress_Zip":71082-2836,
+            "Applicant_CurrentAddress_Zip":'70112',
             # Emp info
             "Applicant_EmploymentHistory_0__Employer": 'Marsk',
             "Applicant_EmploymentHistory_0__Industry": 'EDUCATION',
@@ -363,7 +368,7 @@ class ApplyProcess:
             # Auto Info
             "Cars_0__Year": '2020',
             "Cars_0__Make": 'AUDI',
-            "Cars_0__Model":'CL',
+            "Cars_0__Model":'100',
             "Cars_0__Condition":'Excellent',
             "Cars_0__LienHolder":'PingAn'
 
@@ -384,8 +389,7 @@ class ApplyProcess:
         Select(job_title_dropdown).select_by_index(2)
         # time.sleep(5)
         # 输入County Name
-        Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_visible_text(
-            'Caddo Parish (09)')
+        Select(self.driver.find_element(By.ID, 'countyName')).select_by_index(2)
         # 选择 mail的radio
         self.driver.find_element(By.ID, 'mail').click()
 
