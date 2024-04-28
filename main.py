@@ -1,8 +1,7 @@
 from common_method import ApplyProcess
 
-
-data_interview_application = 'data/data_application_interview.json'
-loan = ApplyProcess(data_interview_application)
+# data_application_interview = 'data_application_interview.json'
+loan = ApplyProcess()
 
 # loan.cancel_pending_app()
 # 创建普通的personal loan

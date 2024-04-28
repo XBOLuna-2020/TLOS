@@ -7,19 +7,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from faker import Faker
-from  selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.chrome.options import Options
-import json
 # import cancel_pending_application
 
 
 class ApplyProcess:
-    def __init__(self, data_application_interview):
-        # 把json 文件中的数据存在字典中
-        self.input_fields = self.load_input_fields_from_json(data_application_interview)
+    def __init__(self):
         self.driver = self.setup_driver()
         self.base_url = self.branch_url() #在初始化时调用方法并储存URL
-
 
     def setup_driver(self):
         driver = webdriver.Chrome()
@@ -29,8 +24,8 @@ class ApplyProcess:
     def branch_url(self):
         # 提示用户输入URL 并返回
         print("Please enter the branch number, like 010110.")
-        branch = '010110'
         # branch = input().strip()
+        branch = '010110'
         if not branch.isdigit():
             raise ValueError("Branch number must be numeric.")
         return f'http://mgrtest:tower1@uft-svr-{branch}/tower{branch}/'
@@ -112,9 +107,46 @@ class ApplyProcess:
             #单击 create/update button
             self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form[2]/p/input[3]').click()
 
+
             print('App:' + app_number + '已处理')
             # 返回到首页
             self.driver.find_element(By.CLASS_NAME, 'logo').click()
+
+
+
+
+    # 定义处理不同错误的方法
+    def handle_address_error(self):
+        # 选中地址的单选项，总是报错
+        # 修改原来的地址
+        Applicant_CurrentAddress_Address = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Address1')
+        Applicant_CurrentAddress_Address.clear()
+        Applicant_CurrentAddress_Address.send_keys('1311 ROOSEVELT ST')
+        Applicant_CurrentAddress_Zip = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Zip')
+        Applicant_CurrentAddress_Zip.clear()
+        Applicant_CurrentAddress_Zip.send_keys('39567-6455')
+        print()
+
+    def handle_source_error(self):
+        self.driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
+        print('Handling Source Error')
+
+    def hanle_county_error(self):
+        # County 选择30
+        Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_value(
+            'Jackson (30)')
+        print('Handling County Error')
+
+    def handle_industry_error(self):
+        # Employment History Applicant_Industry
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
+        time.sleep(2)
+        print('Handling Industry Error')
+
+    def handle_job_title_error(self):
+        # Employment History Applicant_Job Title
+        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
+        print('Handling Job Title Error')
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
@@ -143,16 +175,6 @@ class ApplyProcess:
         table_prompt = EC.text_to_be_present_in_element((By.ID, 'AppplicationTable'), 'No data available in table')
         WebDriverWait(self.driver, 10).until(table_prompt)
 
-    # 把原来Application Interview page的数据保存为json 文件保存在data_application_interview中
-    def save_input_fields_to_json(self, data_application_interview):
-        # 将input_fields字典转换为JSON格式的字符串
-        json_data = json.dump(self.input_fields, indent=4)
-        # 写入到文件中
-        with open(data_application_interview, 'w',encoding='utf-8') as f:
-            f.write(json_data)
-        print(f"Data saved to {data_application_interview}")
-
-
     def create_new_application(self):
         # 在搜索页面单击Create button
         button_create = self.driver.find_element(By.ID, "btnLink")
@@ -173,37 +195,65 @@ class ApplyProcess:
         last_name_group = ['Green', 'Baker', 'Noah']
         first_name = random.choice(first_name_group)
         last_name = random.choice(last_name_group)
-        # 使用JSON文件中的数据填充表单
-        for field, value in self.input_fields.items():
-            try:
-                element = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.ID, field)))
-                # element = self.driver.find_element(By.ID, field)
-                element.send_keys(value)
-            except ElementNotInteractableException as e:
-                print(f"Error interacting with:{field}")
-                print(f"Exception details: {e}")
-                continue
+        # 定位并输入多个字段的数据
+        input_fields = {
+            # Basic loan information
+            # "AmountRequested": 1000, #不知道为啥使用循环无法有效输入
+            "LoanSourceId": 'CUSTOMER RECOMMENDED (5)',
+            "LoanPurposeId": 'CHRISTMAS (1)',
+            "Applicant_Birthdate": '8/8/1998',
+            "Applicant_FirstName": first_name,
+            "Applicant_LastName": last_name,
+            "Applicant_MaritalStatusId": 'Unmarried',
+            # Residence info
+            "ResidenceStatusId": 'Rent',
+            "DateOfResidence": '1/1/2010',
+            "Applicant_CurrentAddress_Address1": '136 W LOUISIANA AVE',
+            "Applicant_CurrentAddress_Address2":'APRTMENT NO 5, UNIT 4, LEVEL 14, ROOM NUMBER 1405',
+            "Applicant_CurrentAddress_Zip":'70112',
+            # Emp info
+            "Applicant_EmploymentHistory_0__Employer": 'Marsk',
+            "Applicant_EmploymentHistory_0__Industry": 'EDUCATION',
+            # "Applicant_EmploymentHistory_0__Position":'TEACHER',
+            "Applicant_EmploymentHistory_0__DateEmployed": '8/8/2008',
+            "Applicant_EmploymentHistory_0__NetSalary": 10000,
+            # Bank info
+            "Applicant_BankName": 'Bank of US',
+            "Applicant_CheckingAccount": 'Y',
+            "Applicant_SavingAccount": 'Y',
+            # Hometown info
+            "HomeTown": 'Dallas',
+            "Friend": 'Jack Steve',
+            "FriendPhone_PhoneTypeId": 'Cell',
+            "Rent_LandlordName": 'Tom Green',
+            "DeclaredBankruptcy": 'N',
+            # Auto Info
+            "Cars_0__Year": '2020',
+            "Cars_0__Make": 'AUDI',
+            "Cars_0__Model":'100',
+            "Cars_0__Condition":'Excellent',
+            "Cars_0__LienHolder":'PingAn'
 
+        }
+        for field, value in input_fields.items():
+            self.driver.find_element(By.ID, field).send_keys(value)
         # 输入电子邮件
-        # self.driver.find_element(By.ID, 'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
+        self.driver.find_element(By.ID, 'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
         # 输入friend phone number
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
         # 输入职业
-        # time.sleep(10)
-        # job_title = self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position')
-        # job_title_dropdown = WebDriverWait(self.driver, 10).until(
-        #     EC.presence_of_element_located((By.ID, 'Applicant_EmploymentHistory_0__Position'))
-        # Select(job_title_dropdown).select_by_index(2)
+        time.sleep(10)
+        job_title = self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position')
+        job_title_dropdown = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'Applicant_EmploymentHistory_0__Position'))
+        )
+        Select(job_title_dropdown).select_by_index(2)
         # time.sleep(5)
         # 输入County Name
-        Select(self.driver.find_element(By.ID, 'countyName')).select_by_visible_text('OUT OF STATE (1000)')
+        Select(self.driver.find_element(By.ID, 'countyName')).select_by_index(2)
         # 选择 mail的radio
-        radio_element = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.ID, 'mail'))
-        )
-        self.driver.execute_script("arguments[0].click();", radio_element)
-        # self.driver.find_element(By.ID, 'mail').click()
+        self.driver.find_element(By.ID, 'mail').click()
 
         # 单击create button
         self.driver.find_element(By.ID, 'btnCreate').click()
@@ -218,12 +268,6 @@ class ApplyProcess:
         global app_number
         app_number = self.driver.find_element(By.XPATH, '//*[@id="additionalHeaderInfo"]/b[1]/a').text
         print('app number:' + app_number)
-
-    def load_input_fields_from_json(self, data_application_interview):
-        with open(data_application_interview, 'r', encoding='utf-8') as f:
-            # 从文件中读取JSON数据并解析为字典
-            self.input_fields = json.load(f)
-        print(f"Data looaded from {data_application_interview}")
 
     def checkout_application(self):
         # app创建成功后，进入checkout页面
