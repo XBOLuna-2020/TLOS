@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
+import test
 # import cancel_pending_application
 
 
@@ -46,7 +47,6 @@ class ApplyProcess:
         logo.click()
 
     def cancel_pending_app(self):
-        # self.driver.get('http://mgrtest:tower1@uft-svr-020539/tower020539/')
         self.driver.get(self.branch_url())
         # 获取所有行（包括标题行）
         from selenium.webdriver.common.by import By
@@ -111,42 +111,6 @@ class ApplyProcess:
             print('App:' + app_number + '已处理')
             # 返回到首页
             self.driver.find_element(By.CLASS_NAME, 'logo').click()
-
-
-
-
-    # 定义处理不同错误的方法
-    def handle_address_error(self):
-        # 选中地址的单选项，总是报错
-        # 修改原来的地址
-        Applicant_CurrentAddress_Address = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Address1')
-        Applicant_CurrentAddress_Address.clear()
-        Applicant_CurrentAddress_Address.send_keys('1311 ROOSEVELT ST')
-        Applicant_CurrentAddress_Zip = self.driver.find_element(By.ID, 'Applicant_CurrentAddress_Zip')
-        Applicant_CurrentAddress_Zip.clear()
-        Applicant_CurrentAddress_Zip.send_keys('39567-6455')
-        print()
-
-    def handle_source_error(self):
-        self.driver.find_element(By.ID, 'LoanSourceId').send_keys('CUSTOMER RECOMMENDED (5)')
-        print('Handling Source Error')
-
-    def hanle_county_error(self):
-        # County 选择30
-        Select(self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')).select_by_value(
-            'Jackson (30)')
-        print('Handling County Error')
-
-    def handle_industry_error(self):
-        # Employment History Applicant_Industry
-        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Industry').send_keys('EDUCATION')
-        time.sleep(2)
-        print('Handling Industry Error')
-
-    def handle_job_title_error(self):
-        # Employment History Applicant_Job Title
-        self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position').send_keys('TEACHER')
-        print('Handling Job Title Error')
 
     def access_application_interview(self):
         # 打开url 并且在用户名和密码放在里面
