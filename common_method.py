@@ -8,7 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from faker import Faker
 from selenium.webdriver.chrome.options import Options
-import test
 # import cancel_pending_application
 
 
@@ -193,27 +192,36 @@ class ApplyProcess:
             "DeclaredBankruptcy": 'N',
             # Auto Info
             "Cars_0__Year": '2020',
-            "Cars_0__Make": 'AUDI',
-            "Cars_0__Model":'100',
             "Cars_0__Condition":'Excellent',
             "Cars_0__LienHolder":'PingAn'
 
         }
+        select_fields = {
+            #
+            "Applicant_Emails_0__EmailAddress":"test@gmail.com",
+            #
+            "Applicant_EmploymentHistory_0__Position":"COACH",
+            # Auto Info
+            "Cars_0__Make": 'AUDI',
+            "Cars_0__Model": '100',
+        }
+        # 先输入input 类型的字段
         for field, value in input_fields.items():
             self.driver.find_element(By.ID, field).send_keys(value)
-        # 输入电子邮件
-        self.driver.find_element(By.ID, 'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
-        # 输入friend phone number
+        # 再输入select类型的字段
+        for field, value in select_fields.items():
+            select_element = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.ID, field)))
+            select_element.send_keys(value)
+         # 输入friend phone number
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
         # 输入职业
         time.sleep(10)
-        job_title = self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position')
-        job_title_dropdown = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, 'Applicant_EmploymentHistory_0__Position'))
-        )
-        Select(job_title_dropdown).select_by_index(2)
-        # time.sleep(5)
+        # job_title = self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position')
+        # job_title_dropdown = WebDriverWait(self.driver, 10).until(
+        #     EC.presence_of_element_located((By.ID, 'Applicant_EmploymentHistory_0__Position'))
+        # )
+        # Select(job_title_dropdown).select_by_index(2)
         # 输入County Name
         Select(self.driver.find_element(By.ID, 'countyName')).select_by_index(2)
         # 选择 mail的radio
