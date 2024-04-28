@@ -1,9 +1,11 @@
 from common_method import ApplyProcess
 
-loan = ApplyProcess()
+
+data_interview_application = 'data/data_application_interview.json'
+loan = ApplyProcess(data_interview_application)
 
 # loan.cancel_pending_app()
-# # 创建普通的personal loan
+# 创建普通的personal loan
 loan.access_application_interview()
 loan.generate_new_ssn()
 loan.search_new_ssn()
