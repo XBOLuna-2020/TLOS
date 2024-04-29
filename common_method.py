@@ -27,10 +27,8 @@ class ApplyProcess:
         return driver  #千万不要忘记返回值 driver
 
     def branch_url(self):
-        # 提示用户输入URL 并返回
-        print("Please enter the branch number, like 010110.")
+        # 在此处修改Branch number来修改URL
         branch = '010110'
-        # branch = input().strip()
         if not branch.isdigit():
             raise ValueError("Branch number must be numeric.")
         return f'http://mgrtest:tower1@uft-svr-{branch}/tower{branch}/'
@@ -144,13 +142,13 @@ class ApplyProcess:
         WebDriverWait(self.driver, 10).until(table_prompt)
 
     # 把原来Application Interview page的数据保存为json 文件保存在data_application_interview中
-    def save_input_fields_to_json(self, data_application_interview):
-        # 将input_fields字典转换为JSON格式的字符串
-        json_data = json.dump(self.input_fields, indent=4)
-        # 写入到文件中
-        with open(data_application_interview, 'w',encoding='utf-8') as f:
-            f.write(json_data)
-        print(f"Data saved to {data_application_interview}")
+    # # def save_input_fields_to_json(self, data_application_interview):
+    #     # 将input_fields字典转换为JSON格式的字符串
+    #     json_data = json.dump(self.input_fields, indent=4)
+    #     # 写入到文件中
+    #     with open(data_application_interview, 'w',encoding='utf-8') as f:
+    #         f.write(json_data)
+    #     print(f"Data saved to {data_application_interview}")
 
 
     def create_new_application(self):
@@ -184,18 +182,9 @@ class ApplyProcess:
                 print(f"Exception details: {e}")
                 continue
 
-        # 输入电子邮件
-        # self.driver.find_element(By.ID, 'Applicant_Emails_0__EmailAddress').send_keys('test@gmail.com')
         # 输入friend phone number
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
-        # 输入职业
-        # time.sleep(10)
-        # job_title = self.driver.find_element(By.ID, 'Applicant_EmploymentHistory_0__Position')
-        # job_title_dropdown = WebDriverWait(self.driver, 10).until(
-        #     EC.presence_of_element_located((By.ID, 'Applicant_EmploymentHistory_0__Position'))
-        # Select(job_title_dropdown).select_by_index(2)
-        # time.sleep(5)
         # 输入County Name
         Select(self.driver.find_element(By.ID, 'countyName')).select_by_visible_text('OUT OF STATE (1000)')
         # 选择 mail的radio
@@ -220,10 +209,18 @@ class ApplyProcess:
         print('app number:' + app_number)
 
     def load_input_fields_from_json(self, data_application_interview):
-        with open(data_application_interview, 'r', encoding='utf-8') as f:
-            # 从文件中读取JSON数据并解析为字典
-            self.input_fields = json.load(f)
-        print(f"Data looaded from {data_application_interview}")
+        try:
+            with open(data_application_interview, 'r', encoding='utf-8') as f:
+                # 从文件中读取JSON数据并解析为字典
+                self.input_fields = json.load(f)
+                # 增加验证，json文件中的数据是否被赋值给变量input_fields
+                print(f"Loaded data:{self.input_fields}")
+                return self.input_fields
+        except Exception as e:
+            print(f"Failed to loaded data: {e}")
+            return None
+
+        print(f"Data loaded from {data_application_interview}")
 
     def checkout_application(self):
         # app创建成功后，进入checkout页面
