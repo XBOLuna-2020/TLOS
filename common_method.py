@@ -181,12 +181,16 @@ class ApplyProcess:
                 print(f"Error interacting with:{field}")
                 print(f"Exception details: {e}")
                 continue
+        # 输入borrower name
+        self.driver.find_element(By.ID, 'Applicant_FirstName').send_keys(first_name)
+        self.driver.find_element(By.ID, 'Applicant_LastName').send_keys(last_name)
 
         # 输入friend phone number
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').click()
         self.driver.find_element(By.XPATH, '//*[@id="FriendPhone_PhoneNumber"]').send_keys('8598379823')
         # 输入County Name
-        Select(self.driver.find_element(By.ID, 'countyName')).select_by_visible_text('OUT OF STATE (1000)')
+        county_name = self.driver.find_element(By.NAME, 'Applicant.CurrentAddress.County')
+        Select(county_name).select_by_visible_text('Acadia Parish (01)')
         # 选择 mail的radio
         radio_element = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.ID, 'mail'))
@@ -198,7 +202,6 @@ class ApplyProcess:
         self.driver.find_element(By.ID, 'btnCreate').click()
         time.sleep(2)
 
-        # 下面代码适用于除了09之外的branch
         # 等待App number 出现，就是application创建成功
         application = EC.text_to_be_present_in_element((By.ID, 'additionalHeaderInfo'), 'Application')
         # application字样出现代表app成功
@@ -214,7 +217,7 @@ class ApplyProcess:
                 # 从文件中读取JSON数据并解析为字典
                 self.input_fields = json.load(f)
                 # 增加验证，json文件中的数据是否被赋值给变量input_fields
-                print(f"Loaded data:{self.input_fields}")
+                # print(f"Loaded data:{self.input_fields}")
                 return self.input_fields
         except Exception as e:
             print(f"Failed to loaded data: {e}")
