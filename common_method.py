@@ -565,6 +565,24 @@ class ApplyProcess:
         # 单击 Account Setup 按钮 从payment 页面开始和personal一样了
         self.setup_account()
 
+    def locate_specified_accounts(self):
+        # 调用已有的方法进入到Application Intervew 页面
+        self.access_application_interview()
+        # 定义筛选条件
+        application_status = self.driver.find_element(By.ID, 'ApplicationStatus')
+        begin_date = self.driver.find_element(By.ID, 'BeginDate')
+        end_date = self.driver.find_element(By.ID, 'EndDate')
+        Select(application_status).select_by_visible_text('LO')
+        begin_date.send_keys('1/1/2024')
+        end_date.send_keys('5/1/2024')
+        # 单击Search button
+        search_button = self.driver.find_element(By.XPATH, '//*[@id="body"]/section/form/fieldset/p/button[1]')
+        search_button.click()
+        print('筛选条件定义完毕')
+
+
+
+
 
 
 
